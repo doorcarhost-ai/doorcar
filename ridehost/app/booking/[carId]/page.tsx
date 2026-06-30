@@ -17,7 +17,7 @@ import { BookingProgress, type BookingStep } from "@/components/booking/BookingP
 import { UpiPayment } from "@/components/booking/UpiPayment";
 import { MOCK_CARS, MOCK_CAR_ADMIN_CONFIGS, MOCK_USER } from "@/data/mock-data";
 import { useBookingStore, useNotificationStore } from "@/lib/store";
-import { formatCurrency, formatDateTime, calculateBookingAmount } from "@/lib/utils";
+import { formatCurrency, formatDateTime, calculateBookingAmount, formatHours } from "@/lib/utils";
 import { BOOKING_MIN_HOURS } from "@/lib/constants";
 
 interface BookingPageProps {
@@ -156,7 +156,7 @@ export default function BookingPage({ params }: BookingPageProps) {
                         {[
                           { icon: Calendar, label: "Pickup", val: formatDateTime(pickupDate, pickupTime) },
                           { icon: Calendar, label: "Return", val: formatDateTime(returnDate, returnTime) },
-                          { icon: Clock, label: "Duration", val: `${Math.round(hours)} hours` },
+                          { icon: Clock, label: "Duration", val: formatHours(hours) },
                           { icon: Car, label: "Category", val: car.category.toUpperCase() },
                         ].map(({ icon: Icon, label, val }) => (
                           <div key={label} className="bg-[#F8F9FB] rounded-2xl p-3.5 border border-[#E5E7EB]">
@@ -292,12 +292,12 @@ export default function BookingPage({ params }: BookingPageProps) {
               </h3>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-[#6B7280]">Base rental ({Math.max(Math.round(hours), BOOKING_MIN_HOURS)}hr × {formatCurrency(adminConfig.hourlyPrice)})</span>
+                  <span className="text-[#6B7280]">Base rental ({formatHours(Math.max(hours, BOOKING_MIN_HOURS))} × {formatCurrency(adminConfig.hourlyPrice)})</span>
                   <span className="font-medium text-[#111827]">{formatCurrency(rentalAmount)}</span>
                 </div>
                 {extraCharges > 0 && (
                   <div className="flex justify-between">
-                    <span className="text-[#6B7280]">Extra {Math.round(extraH)}hr × {formatCurrency(adminConfig.extraHourCharge)}</span>
+                    <span className="text-[#6B7280]">Extra {formatHours(extraH)} × {formatCurrency(adminConfig.extraHourCharge)}</span>
                     <span className="font-medium">{formatCurrency(extraCharges)}</span>
                   </div>
                 )}

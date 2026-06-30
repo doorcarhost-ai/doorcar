@@ -34,7 +34,7 @@ export function AppDownloadBanner() {
               <Button variant="white" className="gap-2 font-bold">
                 App Store <ArrowRight className="h-4 w-4" />
               </Button>
-              <Button className="bg-white/20 hover:bg-white/30 text-white border-0 gap-2">
+              <Button variant="white" className="gap-2 border-white/30">
                 Google Play <ArrowRight className="h-4 w-4" />
               </Button>
             </div>

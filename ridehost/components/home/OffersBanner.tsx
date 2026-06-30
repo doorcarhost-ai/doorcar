@@ -57,7 +57,7 @@ export function OffersBanner() {
                   <Button
                     size="sm"
                     onClick={() => copy(offer.code, offer.id)}
-                    className="bg-white/20 hover:bg-white/30 text-white border-0 gap-1.5 text-xs"
+                    className="bg-white text-[#111827] font-bold border-0 gap-1.5 text-xs hover:bg-gray-100 shadow-sm"
                   >
                     {copiedId === offer.id ? <CheckCircle className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                     {copiedId === offer.id ? "Copied!" : "Copy"}

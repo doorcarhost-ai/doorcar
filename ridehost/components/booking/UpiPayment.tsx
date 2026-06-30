@@ -154,7 +154,7 @@ export function UpiPayment({ amount, purpose, onSubmit, isLoading }: UpiPaymentP
         </motion.p>
         <button
           onClick={() => copy(amount.toString(), "amount")}
-          className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white/20 hover:bg-white/30 text-sm font-medium transition-colors"
+          className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white text-[#FF7A00] font-semibold text-sm hover:bg-orange-50 transition-colors shadow-sm"
         >
           {copied === "amount" ? <><CheckCircle className="h-3.5 w-3.5" />Copied!</> : <><Copy className="h-3.5 w-3.5" />Copy Amount</>}
         </button>
@@ -317,8 +317,8 @@ export function UpiPayment({ amount, purpose, onSubmit, isLoading }: UpiPaymentP
             <><UploadCloud className="h-4 w-4" />Submit Payment Details</>
           )}
           {!canSubmit && !isLoading && (
-            <span className="absolute right-4 text-xs text-white/60">
-              {!utr || utr.length < 10 ? "UTR missing" : "Screenshot missing"}
+            <span className="absolute right-4 text-[10px] text-white/70 hidden sm:block">
+              {!utr || utr.length < 10 ? "Enter UTR" : "Upload screenshot"}
             </span>
           )}
         </Button>

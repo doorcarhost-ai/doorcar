@@ -21,7 +21,7 @@ import { MOCK_BOOKINGS } from "@/data/mock-data";
 import { Booking } from "@/types";
 import { BOOKING_STATUSES, BookingStatusId } from "@/lib/constants";
 import { useBookingStore } from "@/lib/store";
-import { formatCurrency, formatDate, formatDateTime } from "@/lib/utils";
+import { formatCurrency, formatDate, formatDateTime, formatHours } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
 const UPCOMING: BookingStatusId[] = [
@@ -176,7 +176,7 @@ export default function TripsPage() {
               { val: "completed", label: "Done", count: done.length },
               { val: "cancelled", label: "Cancelled", count: cancelled.length },
             ].map(({ val, label, count }) => (
-              <TabsTrigger key={val} value={val} className="rounded-xl data-[state=active]:bg-[#FF7A00] data-[state=active]:text-white text-xs sm:text-sm">
+              <TabsTrigger key={val} value={val} className="rounded-xl data-[state=active]:bg-[#FF7A00] data-[state=active]:text-white data-[state=inactive]:text-[#6B7280] text-xs sm:text-sm font-semibold">
                 {label}
                 {count > 0 && (
                   <span className="ml-1 h-5 w-5 rounded-full bg-current/20 text-[10px] font-bold flex items-center justify-center">
@@ -276,7 +276,7 @@ export default function TripsPage() {
                 </div>
                 <div className="bg-[#F8F9FB] rounded-xl p-3 border border-[#E5E7EB]">
                   <p className="text-xs text-[#6B7280] mb-1">Duration</p>
-                  <p className="font-bold text-[#111827]">{detailBooking.totalHours}hrs</p>
+                  <p className="font-bold text-[#111827]">{formatHours(detailBooking.totalHours)}</p>
                 </div>
                 <div className="bg-[#F8F9FB] rounded-xl p-3 border border-[#E5E7EB] col-span-2">
                   <div className="flex justify-between">
@@ -337,7 +337,7 @@ export default function TripsPage() {
             </div>
             <div className="flex gap-3">
               <Button variant="outline" className="flex-1" onClick={() => setCancelDialog(false)}>Keep Booking</Button>
-              <Button variant="destructive" className="flex-1" onClick={() => { setCancelDialog(false); setDetailBooking(null); }}>Cancel Booking</Button>
+              <Button variant="destructive" className="flex-1 bg-red-600 text-white hover:bg-red-700 border-0" onClick={() => { setCancelDialog(false); setDetailBooking(null); }}>Cancel Booking</Button>
             </div>
           </div>
         </DialogContent>
@@ -390,7 +390,7 @@ function TripCard({ booking, index, onViewDetails, onCancel }: TripCardProps) {
 
           <div className="flex items-center gap-3 mt-2 text-xs text-[#6B7280]">
             <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{formatDate(booking.pickupDate)}</span>
-            <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{booking.totalHours}hrs</span>
+            <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{formatHours(booking.totalHours)}</span>
           </div>
 
           <div className="flex items-center gap-1.5 mt-2">

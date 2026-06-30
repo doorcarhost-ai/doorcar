@@ -212,8 +212,8 @@ function ProfileContent() {
 
         <Tabs defaultValue={defaultTab}>
           <TabsList className="w-full grid grid-cols-2 mb-6 bg-white border border-[#E5E7EB] p-1 rounded-2xl">
-            <TabsTrigger value="profile" className="rounded-xl data-[state=active]:bg-[#FF7A00] data-[state=active]:text-white">Profile</TabsTrigger>
-            <TabsTrigger value="verification" className="rounded-xl data-[state=active]:bg-[#FF7A00] data-[state=active]:text-white relative">
+            <TabsTrigger value="profile" className="rounded-xl data-[state=active]:bg-[#FF7A00] data-[state=active]:text-white data-[state=inactive]:text-[#6B7280] font-semibold">Profile</TabsTrigger>
+            <TabsTrigger value="verification" className="rounded-xl data-[state=active]:bg-[#FF7A00] data-[state=active]:text-white data-[state=inactive]:text-[#6B7280] font-semibold relative">
               Verification
               {overallStatus === "not_uploaded" && <span className="ml-1.5 h-2 w-2 rounded-full bg-[#FF7A00] inline-block" />}
             </TabsTrigger>
@@ -320,7 +320,7 @@ function ProfileContent() {
             </div>
 
             <Separator />
-            <Button variant="outline" className="w-full text-red-600 hover:bg-red-50 hover:border-red-300 gap-2">
+            <Button variant="destructive" className="w-full gap-2">
               <LogOut className="h-4 w-4" />Sign Out
             </Button>
             <p className="text-center text-xs text-[#6B7280]">{APP_NAME} v1.0.0 · Made in India 🇮🇳</p>

@@ -20,7 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { MOCK_CARS, MOCK_CAR_ADMIN_CONFIGS, MOCK_USER } from "@/data/mock-data";
 import { CarAdminConfig } from "@/types";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatHours } from "@/lib/utils";
 import { DEFAULT_CAR_ADMIN_CONFIG } from "@/lib/constants";
 import { useVerificationStore, useBookingStore, useNotificationStore, VerificationRequest } from "@/lib/store";
 import { cn } from "@/lib/utils";
@@ -57,7 +57,7 @@ function RejectDialog({
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button
-            variant="destructive"
+            className="bg-red-600 text-white hover:bg-red-700 disabled:bg-gray-200 disabled:text-gray-400"
             disabled={!reason.trim()}
             onClick={() => { onConfirm(reason.trim()); setReason(""); onClose(); }}
           >
@@ -338,7 +338,7 @@ export default function AdminPage() {
               </div>
             )}
             <Link href="/">
-              <Button size="sm" variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
+              <Button size="sm" variant="white" className="border-transparent">
                 <Home className="h-4 w-4 mr-1.5" />App
               </Button>
             </Link>
@@ -366,18 +366,18 @@ export default function AdminPage() {
         </div>
 
         <Tabs defaultValue="verification">
-          <TabsList className="mb-6 bg-white border border-[#E5E7EB] p-1 rounded-2xl">
-            <TabsTrigger value="verification" className="rounded-xl data-[state=active]:bg-[#FF7A00] data-[state=active]:text-white">
-              Verification {pendingVerifications.length > 0 && <span className="ml-1.5 h-5 w-5 rounded-full bg-white/20 text-[10px] flex items-center justify-center font-bold">{pendingVerifications.length}</span>}
+          <TabsList className="mb-6 bg-white border border-[#E5E7EB] p-1 rounded-2xl flex-wrap h-auto gap-1">
+            <TabsTrigger value="verification" className="rounded-xl data-[state=active]:bg-[#FF7A00] data-[state=active]:text-white data-[state=inactive]:text-[#6B7280]">
+              Verification {pendingVerifications.length > 0 && <span className="ml-1.5 h-5 w-5 rounded-full bg-[#FF7A00]/20 text-[#FF7A00] text-[10px] flex items-center justify-center font-bold">{pendingVerifications.length}</span>}
             </TabsTrigger>
-            <TabsTrigger value="rental" className="rounded-xl data-[state=active]:bg-[#FF7A00] data-[state=active]:text-white">
-              Rental Payment {rentalPaymentRequests.length > 0 && <span className="ml-1.5 h-5 w-5 rounded-full bg-white/20 text-[10px] flex items-center justify-center font-bold">{rentalPaymentRequests.length}</span>}
+            <TabsTrigger value="rental" className="rounded-xl data-[state=active]:bg-[#FF7A00] data-[state=active]:text-white data-[state=inactive]:text-[#6B7280]">
+              Rental Payment {rentalPaymentRequests.length > 0 && <span className="ml-1.5 h-5 w-5 rounded-full bg-[#FF7A00]/20 text-[#FF7A00] text-[10px] flex items-center justify-center font-bold">{rentalPaymentRequests.length}</span>}
             </TabsTrigger>
-            <TabsTrigger value="second" className="rounded-xl data-[state=active]:bg-[#FF7A00] data-[state=active]:text-white">
-              Second Payment {secondPaymentRequests.length > 0 && <span className="ml-1.5 h-5 w-5 rounded-full bg-white/20 text-[10px] flex items-center justify-center font-bold">{secondPaymentRequests.length}</span>}
+            <TabsTrigger value="second" className="rounded-xl data-[state=active]:bg-[#FF7A00] data-[state=active]:text-white data-[state=inactive]:text-[#6B7280]">
+              2nd Payment {secondPaymentRequests.length > 0 && <span className="ml-1.5 h-5 w-5 rounded-full bg-[#FF7A00]/20 text-[#FF7A00] text-[10px] flex items-center justify-center font-bold">{secondPaymentRequests.length}</span>}
             </TabsTrigger>
-            <TabsTrigger value="cars" className="rounded-xl data-[state=active]:bg-[#FF7A00] data-[state=active]:text-white">Car Config</TabsTrigger>
-            {isDev && <TabsTrigger value="testmode" className="rounded-xl data-[state=active]:bg-[#FF7A00] data-[state=active]:text-white">🧪 Test Mode</TabsTrigger>}
+            <TabsTrigger value="cars" className="rounded-xl data-[state=active]:bg-[#FF7A00] data-[state=active]:text-white data-[state=inactive]:text-[#6B7280]">Car Config</TabsTrigger>
+            {isDev && <TabsTrigger value="testmode" className="rounded-xl data-[state=active]:bg-[#FF7A00] data-[state=active]:text-white data-[state=inactive]:text-[#6B7280]">🧪 Test Mode</TabsTrigger>}
           </TabsList>
 
           {/* ── VERIFICATION TAB ── */}
@@ -515,7 +515,7 @@ export default function AdminPage() {
                       </div>
                       <div className="bg-[#F8F9FB] rounded-xl p-3">
                         <p className="text-xs text-[#6B7280]">Duration</p>
-                        <p className="text-sm font-semibold text-[#111827]">{b.hours}hrs</p>
+                        <p className="text-sm font-semibold text-[#111827]">{formatHours(b.hours)}</p>
                       </div>
                     </div>
 

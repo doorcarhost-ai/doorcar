@@ -67,7 +67,7 @@ export function LuxuryCollection() {
             <p className="text-gray-400">Experience the pinnacle of automotive excellence</p>
           </div>
           <Link href="/cars?category=luxury">
-            <Button variant="outline" className="hidden sm:flex gap-1 bg-white/10 border-white/20 text-white hover:bg-white/20">
+            <Button variant="white" className="hidden sm:flex gap-1 border-white/20">
               View All <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>

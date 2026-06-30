@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { VerificationGate } from "@/components/shared/VerificationGate";
 import { bookingFormSchema, BookingFormData } from "@/lib/validations";
-import { calculateBookingAmount, calculateHours, formatCurrency } from "@/lib/utils";
+import { calculateBookingAmount, calculateHours, formatCurrency, formatHours } from "@/lib/utils";
 import { BOOKING_MIN_HOURS } from "@/lib/constants";
 import { useVerificationStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
@@ -234,7 +234,7 @@ export function BookingForm({ car }: BookingFormProps) {
             <div className="rounded-2xl bg-[#FFF8F3] border border-[#FF7A00]/15 p-4">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-[#6B7280]">Duration</span>
-                <span className="text-sm font-bold text-[#111827]">{Math.round(hours)} hours</span>
+                <span className="text-sm font-bold text-[#111827]">{formatHours(hours)}</span>
               </div>
               <Separator className="my-2.5 bg-[#FF7A00]/10" />
               <div className="flex justify-between items-center">

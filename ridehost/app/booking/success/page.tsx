@@ -83,7 +83,7 @@ function SuccessContent() {
         >
           <p className="text-sm text-white/80 font-medium mb-2">Booking Reference</p>
           <p className="text-3xl font-mono font-bold tracking-widest mb-3">{bookingRef}</p>
-          <Badge className="bg-white/20 text-white border-0 text-sm px-4 py-1">
+          <Badge className="bg-white text-[#FF7A00] border-0 text-sm px-4 py-1 font-semibold">
             <span className="h-2 w-2 rounded-full bg-green-300 mr-2 inline-block animate-pulse" />
             Under Admin Review
           </Badge>
@@ -190,7 +190,7 @@ function SuccessContent() {
           </Button>
 
           <Link href="/">
-            <Button variant="ghost" className="w-full gap-2 text-[#6B7280] hover:text-[#111827]">
+            <Button variant="outline" className="w-full gap-2">
               <Home className="h-4 w-4" />Back to Home
             </Button>
           </Link>

@@ -97,3 +97,16 @@ export function truncate(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength) + "...";
 }
+
+export function formatHours(hours: number): string {
+  const h = Math.floor(hours);
+  const m = Math.round((hours - h) * 60);
+  if (m === 0) return `${h} hrs`;
+  if (h === 0) return `${m} min`;
+  return `${h}h ${m}m`;
+}
+
+export function parseHoursSafe(val: string | number): number {
+  const n = typeof val === "string" ? parseFloat(val) : val;
+  return isNaN(n) ? 0 : n;
+}
