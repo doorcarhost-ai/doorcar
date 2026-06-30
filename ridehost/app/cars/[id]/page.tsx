@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   BadgeCheck, Calendar, ChevronLeft, FileCheck, Fuel,
-  MapPin, Settings2, Share2, Shield, Star, Users, Zap,
+  MapPin, Settings2, Share2, Star, Users, Zap,
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { BottomNav } from "@/components/layout/BottomNav";
@@ -44,10 +44,9 @@ export default async function CarDetailPage({ params }: Props) {
     { icon: Users, label: "Seats", value: `${car.seats} Seater` },
     { icon: Star, label: "Mileage", value: car.mileage },
     { icon: Calendar, label: "Year", value: `${car.year}` },
-    { icon: Shield, label: "Insurance", value: "Included" },
   ];
 
-  const included = ["Third-party insurance", "24×7 roadside assistance", "100km included daily", "Fuel top-up support"];
+  const included = ["24×7 roadside assistance", "100km included daily", "Fuel top-up support", "Contactless key handover"];
   const notIncluded = ["Driver", "Toll charges", "Parking fees", "Traffic fines"];
 
   return (
@@ -170,7 +169,7 @@ export default async function CarDetailPage({ params }: Props) {
               </div>
             </div>
 
-            {/* Pricing (rental only, no deposit) */}
+            {/* Pricing */}
             <div className="bg-white rounded-3xl border border-[#E5E7EB] p-6 shadow-premium">
               <h2 className="text-lg font-bold text-[#111827] mb-4">Rental Pricing</h2>
               <div className="grid grid-cols-2 gap-4">
@@ -185,10 +184,6 @@ export default async function CarDetailPage({ params }: Props) {
                   <p className="text-xs text-[#6B7280] mt-1">{formatCurrency(car.hourlyPrice * car.minBookingHours)} min charge</p>
                 </div>
               </div>
-              <p className="text-xs text-[#9CA3AF] mt-4 p-3 bg-[#F8F9FB] rounded-xl border border-[#E5E7EB] flex items-start gap-2">
-                <Shield className="h-4 w-4 text-[#FF7A00] shrink-0" />
-                Security deposit & other charges are collected only after admin approves your rental payment. No hidden fees upfront.
-              </p>
             </div>
 
             {/* Cancellation Policy */}

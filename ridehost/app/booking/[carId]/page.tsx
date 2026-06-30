@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   BadgeCheck, Calendar, Car, CheckCircle, ChevronLeft, Clock,
-  CreditCard, MapPin, Receipt, Shield,
+  CreditCard, MapPin, Receipt,
 } from "lucide-react";
 import Image from "next/image";
 import { Header } from "@/components/layout/Header";
@@ -169,17 +169,6 @@ export default function BookingPage({ params }: BookingPageProps) {
                         ))}
                       </div>
 
-                      {/* Important notice */}
-                      <div className="flex items-start gap-3 p-4 bg-[#FFF8F3] border border-[#FF7A00]/20 rounded-2xl">
-                        <Shield className="h-5 w-5 text-[#FF7A00] mt-0.5 shrink-0" />
-                        <div>
-                          <p className="text-sm font-bold text-[#FF7A00]">Pay only rental amount now</p>
-                          <p className="text-xs text-[#6B7280] mt-0.5">
-                            Security deposit & other charges are collected only after admin approves your rental payment.
-                          </p>
-                        </div>
-                      </div>
-
                       <Button variant="gradient" size="xl" className="w-full gap-2" onClick={() => setStepIdx(1)}>
                         <CreditCard className="h-5 w-5" />
                         Proceed to Pay {formatCurrency(totalRental)}
@@ -269,8 +258,7 @@ export default function BookingPage({ params }: BookingPageProps) {
                           {[
                             "Admin verifies your UTR and screenshot",
                             "Rental payment approved (15–30 min)",
-                            "You receive notification to complete booking",
-                            "Choose delivery & pay remaining charges",
+                            "You will be notified to proceed",
                             "Booking confirmed — vehicle ready!",
                           ].map((s, i) => (
                             <li key={i} className="flex items-start gap-2">
@@ -318,22 +306,6 @@ export default function BookingPage({ params }: BookingPageProps) {
                   <span className="font-bold text-[#111827]">Pay Now</span>
                   <span className="text-xl font-bold text-[#FF7A00]">{formatCurrency(totalRental)}</span>
                 </div>
-              </div>
-
-              <div className="mt-4 p-3 bg-[#F8F9FB] rounded-xl border border-[#E5E7EB] space-y-2">
-                <p className="text-xs font-bold text-[#6B7280] uppercase tracking-wider">After Approval (2nd Payment)</p>
-                {[
-                  { l: "Security Deposit", v: adminConfig.securityDeposit },
-                  { l: "Platform Fee", v: adminConfig.platformFee },
-                  { l: "Insurance", v: adminConfig.insuranceFee },
-                  ...(adminConfig.cleaningCharges > 0 ? [{ l: "Cleaning", v: adminConfig.cleaningCharges }] : []),
-                ].filter(x => x.v > 0).map(({ l, v }) => (
-                  <div key={l} className="flex justify-between text-xs text-[#6B7280]">
-                    <span>{l}</span>
-                    <span className="font-medium">{formatCurrency(v)}</span>
-                  </div>
-                ))}
-                <p className="text-xs text-[#9CA3AF] italic">+ Delivery fee if applicable</p>
               </div>
 
               {/* Car info */}

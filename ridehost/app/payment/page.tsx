@@ -173,11 +173,6 @@ function PaymentContent() {
                 </div>
               </div>
 
-              <div className="p-3 bg-[#F8F9FB] rounded-xl border border-[#E5E7EB]">
-                <p className="text-xs text-[#6B7280]">
-                  Security deposit & other charges are collected separately after admin approves this payment.
-                </p>
-              </div>
             </div>
           </div>
         </div>

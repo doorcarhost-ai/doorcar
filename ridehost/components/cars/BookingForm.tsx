@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, Calendar, Clock, Shield } from "lucide-react";
+import { AlertCircle, Calendar, Clock } from "lucide-react";
 import { Car } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -230,7 +230,6 @@ export function BookingForm({ car }: BookingFormProps) {
             </div>
           )}
 
-          {/* Rental Amount preview — no deposit */}
           {hours > 0 && !minHoursNotMet && (
             <div className="rounded-2xl bg-[#FFF8F3] border border-[#FF7A00]/15 p-4">
               <div className="flex justify-between items-center mb-2">
@@ -242,10 +241,6 @@ export function BookingForm({ car }: BookingFormProps) {
                 <span className="font-bold text-[#111827]">Rental Amount</span>
                 <span className="text-2xl font-bold text-[#FF7A00]">{formatCurrency(rentalAmount)}</span>
               </div>
-              <p className="text-xs text-[#6B7280] mt-2 flex items-center gap-1">
-                <Shield className="h-3 w-3 text-[#FF7A00]" />
-                Deposit & charges shown after admin approval
-              </p>
             </div>
           )}
 
