@@ -29,6 +29,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { StarRating } from "@/components/shared/StarRating";
 import { MOCK_BOOKINGS } from "@/data/mock-data";
 import { Booking } from "@/types";
+import { useBookingStore } from "@/lib/store";
 import { BOOKING_STATUSES, BookingStatusId } from "@/lib/constants";
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/utils";
 import { cn } from "@/lib/utils";
@@ -90,10 +91,47 @@ export default function TripsPage() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [cancelDialog, setCancelDialog] = useState(false);
 
-  const upcoming = MOCK_BOOKINGS.filter((b) => UPCOMING_STATUSES.includes(b.status));
-  const ongoing = MOCK_BOOKINGS.filter((b) => ONGOING_STATUSES.includes(b.status));
-  const completed = MOCK_BOOKINGS.filter((b) => COMPLETED_STATUSES.includes(b.status));
-  const cancelled = MOCK_BOOKINGS.filter((b) => b.status === "cancelled");
+  const { bookings: storeBookings } = useBookingStore();
+
+  // Merge store bookings (as mock Booking type) with MOCK_BOOKINGS
+  const allBookings: Booking[] = [
+    ...MOCK_BOOKINGS,
+    ...storeBookings.map((b) => ({
+      id: b.id,
+      carId: b.carId,
+      car: { name: b.carName, images: [b.carImage], location: "", category: "suv", id: b.carId, brand: "", model: "", year: 2023, rating: 4.8, totalTrips: 100, fuelType: "petrol", transmission: "automatic", seats: 5, hourlyPrice: b.rentalAmount / Math.max(b.hours, 12), dailyPrice: 1000, minBookingHours: 12, extraHourCharge: 90, city: "", available: true, verified: true, features: [], description: "", rentalPolicy: [], securityDeposit: 0, mileage: "", engineCC: 0, color: "", licensePlate: "", hostName: "", hostAvatar: "", hostRating: 5 } as Booking["car"],
+      userId: b.userId,
+      status: b.status,
+      pickupDate: new Date(b.pickupDate),
+      pickupTime: b.pickupTime,
+      returnDate: new Date(b.returnDate),
+      returnTime: b.returnTime,
+      totalHours: b.hours,
+      rentalAmount: b.rentalAmount,
+      deliveryOption: b.deliveryOption || "self_pickup",
+      securityDeposit: 0,
+      platformFee: 0,
+      insuranceFee: 0,
+      cleaningCharges: 0,
+      fastagAdvance: 0,
+      homeDeliveryFee: 0,
+      additionalCharges: [],
+      totalAmount: b.rentalAmount + b.secondPaymentAmount,
+      rentalPaymentUtr: b.rentalPaymentUtr,
+      secondPaymentUtr: b.secondPaymentUtr,
+      paymentMethod: "upi" as const,
+      paymentStatus: "paid" as const,
+      customerDetails: { name: b.userName, email: "", phone: b.userPhone, emergencyContactName: "", emergencyContactPhone: "", emergencyContactRelation: "" },
+      createdAt: new Date(b.createdAt),
+      updatedAt: new Date(b.createdAt),
+      bookingReference: b.bookingRef,
+    })),
+  ];
+
+  const upcoming = allBookings.filter((b) => UPCOMING_STATUSES.includes(b.status));
+  const ongoing = allBookings.filter((b) => ONGOING_STATUSES.includes(b.status));
+  const completed = allBookings.filter((b) => COMPLETED_STATUSES.includes(b.status));
+  const cancelled = allBookings.filter((b) => b.status === "cancelled");
 
   return (
     <main className="min-h-screen bg-background">
@@ -245,7 +283,7 @@ export default function TripsPage() {
 
               {/* Action buttons */}
               {selectedBooking.status === "rental_payment_approved" && (
-                <Link href={`/booking/complete?carId=${selectedBooking.carId}&delivery=${selectedBooking.deliveryOption}`}>
+                <Link href={`/booking/complete?carId=${selectedBooking.carId}&bookingId=${selectedBooking.id}`}>
                   <Button variant="gradient" className="w-full gap-2">
                     Complete Booking <ArrowRight className="h-4 w-4" />
                   </Button>
@@ -352,7 +390,7 @@ function TripCard({ booking, index, onViewDetails, onCancel }: TripCardProps) {
         </div>
         <div className="flex gap-2">
           {booking.status === "rental_payment_approved" && (
-            <Link href={`/booking/complete?carId=${booking.carId}&delivery=${booking.deliveryOption}`}>
+            <Link href={`/booking/complete?carId=${booking.carId}&bookingId=${booking.id}`}>
               <Button variant="gradient" size="sm" className="h-8 text-xs gap-1">
                 Complete <ArrowRight className="h-3.5 w-3.5" />
               </Button>

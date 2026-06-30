@@ -2,31 +2,43 @@
 
 import { useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { CheckCircle, ChevronLeft, Info } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { CheckCircle, ChevronLeft, Info, MapPin, Truck } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { DeliveryOption } from "@/components/booking/DeliveryOption";
 import { UpiPayment } from "@/components/booking/UpiPayment";
 import { MOCK_CARS, MOCK_CAR_ADMIN_CONFIGS } from "@/data/mock-data";
+import { useBookingStore, useNotificationStore } from "@/lib/store";
+import { DeliveryAddress } from "@/types";
 import { formatCurrency } from "@/lib/utils";
+
+type Stage = "delivery" | "payment" | "done";
 
 function CompleteBookingContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [paid, setPaid] = useState(false);
+  const [stage, setStage] = useState<Stage>("delivery");
+  const [deliveryChoice, setDeliveryChoice] = useState<"self_pickup" | "home_delivery" | null>(null);
+  const [deliveryAddr, setDeliveryAddr] = useState<DeliveryAddress | undefined>();
   const [submitting, setSubmitting] = useState(false);
 
+  const bookingId = searchParams.get("bookingId") || "";
   const carId = searchParams.get("carId") || "1";
-  const deliveryOption = searchParams.get("delivery") || "self_pickup";
+
+  const { setDelivery, submitSecondPayment, getBooking } = useBookingStore();
+  const { addNotification } = useNotificationStore();
 
   const car = MOCK_CARS.find((c) => c.id === carId) || MOCK_CARS[0];
   const config = MOCK_CAR_ADMIN_CONFIGS.find((c) => c.carId === carId) || MOCK_CAR_ADMIN_CONFIGS[0];
+  const booking = bookingId ? getBooking(bookingId) : null;
 
-  const deliveryFee = deliveryOption === "home_delivery" && config.enableHomeDelivery ? config.homeDeliveryFee : 0;
+  const deliveryFee = deliveryChoice === "home_delivery" && config.enableHomeDelivery ? config.homeDeliveryFee : 0;
 
+  // All charges (only non-zero shown)
   const charges: { label: string; amount: number; refundable?: boolean }[] = [
     { label: "Security Deposit", amount: config.securityDeposit, refundable: true },
     { label: "Platform Fee", amount: config.platformFee },
@@ -37,34 +49,43 @@ function CompleteBookingContent() {
     ...(config.additionalCharges || []).map((c) => ({ label: c.label, amount: c.amount })),
   ].filter((c) => c.amount > 0);
 
-  const total = charges.reduce((sum, c) => sum + c.amount, 0);
+  const total = charges.reduce((s, c) => s + c.amount, 0);
+
+  const handleDeliverySelect = (option: "self_pickup" | "home_delivery", address?: DeliveryAddress) => {
+    setDeliveryChoice(option);
+    setDeliveryAddr(address);
+    if (bookingId) setDelivery(bookingId, option, address as unknown as Record<string, string>);
+    setStage("payment");
+  };
 
   const handlePayment = async (data: { utrNumber: string; screenshotUrl: string }) => {
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 1500));
+    await new Promise((r) => setTimeout(r, 1200));
+    if (bookingId) submitSecondPayment(bookingId, data.utrNumber, data.screenshotUrl);
     setSubmitting(false);
-    setPaid(true);
+    setStage("done");
+    addNotification({ type: "success", title: "Second Payment Submitted!", message: "Admin will verify and confirm your booking." });
   };
 
-  if (paid) {
+  if (stage === "done") {
     return (
-      <main className="min-h-screen bg-background">
+      <main className="min-h-screen bg-[#F8F9FB]">
         <Header />
         <div className="pt-24 pb-12 px-4 sm:px-6 max-w-lg mx-auto text-center">
-          <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring" }}>
+          <motion.div initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring" }}>
             <div className="relative inline-flex mb-6">
-              <div className="h-24 w-24 rounded-full bg-green-100 dark:bg-green-950 flex items-center justify-center">
-                <CheckCircle className="h-12 w-12 text-green-600 dark:text-green-400" />
+              <div className="h-24 w-24 rounded-full bg-[#FFF8F3] flex items-center justify-center">
+                <CheckCircle className="h-12 w-12 text-[#FF7A00]" />
               </div>
-              <motion.div className="absolute inset-0 rounded-full bg-green-400 opacity-40" initial={{ scale: 0.8 }} animate={{ scale: 1.6, opacity: 0 }} transition={{ duration: 1, repeat: Infinity }} />
+              <motion.div className="absolute inset-0 rounded-full bg-[#FF7A00] opacity-20"
+                initial={{ scale: 0.8 }} animate={{ scale: 1.7, opacity: 0 }} transition={{ duration: 1, repeat: Infinity }}
+              />
             </div>
-            <h1 className="text-2xl font-bold mb-2">Payment Submitted!</h1>
-            <p className="text-muted-foreground mb-6">
-              Your second payment is under admin verification. Your booking will be confirmed once approved.
-            </p>
-            <Badge variant="warning" className="mb-6">Additional Charges Submitted</Badge>
+            <h1 className="text-2xl font-bold text-[#111827] mb-2">Payment Submitted!</h1>
+            <p className="text-[#6B7280] mb-5">Admin will verify and confirm your booking. You&apos;ll be notified once confirmed.</p>
+            <Badge variant="warning" className="mb-6 text-sm">Additional Charges Submitted</Badge>
             <div className="space-y-3">
-              <Button variant="gradient" className="w-full" onClick={() => router.push("/trips")}>View My Trips</Button>
+              <Button variant="gradient" size="lg" className="w-full" onClick={() => router.push("/trips")}>View My Trips</Button>
               <Button variant="outline" className="w-full" onClick={() => router.push("/")}>Back to Home</Button>
             </div>
           </motion.div>
@@ -76,65 +97,91 @@ function CompleteBookingContent() {
   }
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-[#F8F9FB]">
       <Header />
       <div className="pt-20 pb-12 px-4 sm:px-6 max-w-4xl mx-auto">
-        <button onClick={() => router.back()} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors">
+        <button onClick={() => (stage === "payment" ? setStage("delivery") : router.back())}
+          className="flex items-center gap-1.5 text-sm text-[#6B7280] hover:text-[#FF7A00] mb-6 transition-colors"
+        >
           <ChevronLeft className="h-4 w-4" />Back
         </button>
 
         <div className="flex items-center gap-3 mb-6">
-          <h1 className="text-2xl font-bold">Complete Your Booking</h1>
-          <Badge variant="success">Rental Approved</Badge>
+          <h1 className="text-2xl font-bold text-[#111827]">Complete Your Booking</h1>
+          <Badge variant="success">Rental Approved ✓</Badge>
         </div>
 
-        <div className="bg-[#FFF8F3] dark:bg-[#FFF8F3]/20 border border-[#FF7A00]/20 dark:border-[#FF7A00]/20 rounded-2xl p-4 mb-6 flex items-start gap-3">
+        <div className="bg-[#FFF8F3] border border-[#FF7A00]/20 rounded-2xl p-4 mb-6 flex items-start gap-3">
           <Info className="h-5 w-5 text-[#FF7A00] mt-0.5 shrink-0" />
           <div>
-            <p className="text-sm font-semibold text-[#FF7A00] dark:text-[#FF7A00]">Your rental payment has been approved!</p>
-            <p className="text-xs text-[#FF7A00] dark:text-[#FF7A00] mt-1">
-              Please complete the booking by paying the remaining charges below. Your booking will be confirmed after admin verifies this payment.
+            <p className="text-sm font-bold text-[#FF7A00]">Rental payment approved! Complete your booking.</p>
+            <p className="text-xs text-[#6B7280] mt-0.5">
+              {stage === "delivery" ? "Choose how you'd like to receive the vehicle, then pay the remaining charges." : "Pay the security deposit and other charges to confirm your booking."}
             </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <UpiPayment
-              amount={total}
-              purpose={`Complete Booking — ${car.name}`}
-              onSubmit={handlePayment}
-              isLoading={submitting}
-            />
+            <AnimatePresence mode="wait">
+              {stage === "delivery" && (
+                <motion.div key="delivery" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                  <div className="bg-white rounded-3xl border border-[#E5E7EB] p-6 shadow-premium">
+                    <DeliveryOption config={config} onSelect={handleDeliverySelect} />
+                  </div>
+                </motion.div>
+              )}
+
+              {stage === "payment" && (
+                <motion.div key="payment" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                  <UpiPayment
+                    amount={total}
+                    purpose={`Complete Booking — ${car.name}`}
+                    onSubmit={handlePayment}
+                    isLoading={submitting}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
+          {/* Charges sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-card border border-border rounded-2xl p-5 sticky top-24">
-              <h3 className="font-semibold mb-4">Charges Breakdown</h3>
-              <div className="space-y-3">
-                {charges.map((charge, idx) => (
-                  <div key={idx} className="flex justify-between text-sm">
-                    <div>
-                      <span className="text-muted-foreground">{charge.label}</span>
-                      {charge.refundable && (
-                        <span className="ml-1 text-xs text-green-600">(refundable)</span>
-                      )}
+            <div className="bg-white rounded-3xl border border-[#E5E7EB] p-5 sticky top-24 shadow-premium">
+              <h3 className="font-bold text-[#111827] mb-4">Charges Breakdown</h3>
+              {charges.length === 0 ? (
+                <p className="text-sm text-[#6B7280]">No additional charges for this booking.</p>
+              ) : (
+                <div className="space-y-3 text-sm">
+                  {charges.map((c, i) => (
+                    <div key={i} className="flex justify-between">
+                      <div>
+                        <span className="text-[#6B7280]">{c.label}</span>
+                        {c.refundable && <span className="ml-1 text-xs text-green-600">(refundable)</span>}
+                      </div>
+                      <span className="font-semibold text-[#111827]">{formatCurrency(c.amount)}</span>
                     </div>
-                    <span className="font-medium">{formatCurrency(charge.amount)}</span>
+                  ))}
+                  {deliveryChoice && (
+                    <div className="flex justify-between text-xs text-[#6B7280]">
+                      <span>Delivery</span>
+                      <span className="capitalize font-medium text-[#111827]">{deliveryChoice.replace("_", " ")}</span>
+                    </div>
+                  )}
+                  <Separator />
+                  <div className="flex justify-between font-bold text-base">
+                    <span className="text-[#111827]">Total</span>
+                    <span className="text-[#FF7A00]">{formatCurrency(total)}</span>
                   </div>
-                ))}
-                <Separator />
-                <div className="flex justify-between font-bold text-base">
-                  <span>Total</span>
-                  <span className="text-primary">{formatCurrency(total)}</span>
                 </div>
-              </div>
-
-              <div className="mt-4 p-3 bg-muted/50 rounded-xl">
-                <p className="text-xs text-muted-foreground">
-                  Security deposit of {formatCurrency(config.securityDeposit)} is fully refundable within 3-5 business days after trip completion.
-                </p>
-              </div>
+              )}
+              {charges.some((c) => c.refundable) && (
+                <div className="mt-4 p-3 bg-green-50 rounded-xl border border-green-200">
+                  <p className="text-xs text-green-700">
+                    Security deposit of {formatCurrency(config.securityDeposit)} is fully refundable within 3-5 days after trip.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -147,7 +194,7 @@ function CompleteBookingContent() {
 
 export default function CompleteBookingPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="h-8 w-8 border-2 border-[#FF7A00] border-t-transparent rounded-full animate-spin" /></div>}>
       <CompleteBookingContent />
     </Suspense>
   );

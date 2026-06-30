@@ -13,7 +13,7 @@ import { VerificationGate } from "@/components/shared/VerificationGate";
 import { bookingFormSchema, BookingFormData } from "@/lib/validations";
 import { calculateBookingAmount, calculateHours, formatCurrency } from "@/lib/utils";
 import { BOOKING_MIN_HOURS } from "@/lib/constants";
-import { MOCK_USER } from "@/data/mock-data";
+import { useVerificationStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 interface BookingFormProps {
@@ -25,6 +25,7 @@ export function BookingForm({ car }: BookingFormProps) {
   const [rentalAmount, setRentalAmount] = useState(0);
   const [hours, setHours] = useState(0);
   const [verificationGateOpen, setVerificationGateOpen] = useState(false);
+  const { userVerificationStatus } = useVerificationStore();
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm<BookingFormData>({
     resolver: zodResolver(bookingFormSchema),
@@ -46,9 +47,17 @@ export function BookingForm({ car }: BookingFormProps) {
   }, [pickupDate, pickupTime, returnDate, returnTime, car]);
 
   const onSubmit = (data: BookingFormData) => {
-    const isVerified = MOCK_USER.verification.overallStatus === "verified";
-    if (!isVerified) { setVerificationGateOpen(true); return; }
-    const params = new URLSearchParams({ pickupDate: data.pickupDate, pickupTime: data.pickupTime, returnDate: data.returnDate, returnTime: data.returnTime, hours: hours.toString() });
+    if (userVerificationStatus !== "verified") {
+      setVerificationGateOpen(true);
+      return;
+    }
+    const params = new URLSearchParams({
+      pickupDate: data.pickupDate,
+      pickupTime: data.pickupTime,
+      returnDate: data.returnDate,
+      returnTime: data.returnTime,
+      hours: hours.toString(),
+    });
     router.push(`/booking/${car.id}?${params.toString()}`);
   };
 
@@ -57,20 +66,21 @@ export function BookingForm({ car }: BookingFormProps) {
   return (
     <>
       <div className="bg-white rounded-3xl border border-[#E5E7EB] shadow-premium-lg overflow-hidden sticky top-24">
-        {/* Price header */}
-        <div className="p-5 border-b border-[#E5E7EB] bg-gradient-to-r from-[#FFF8F3] to-[#FFFAF5]">
-          <div className="flex items-baseline gap-1 mb-1">
+        {/* Header */}
+        <div className="p-5 border-b border-[#E5E7EB] bg-gradient-to-r from-[#FFF8F3] to-white">
+          <div className="flex items-baseline gap-1.5">
             <span className="text-3xl font-bold text-[#111827]">{formatCurrency(car.hourlyPrice)}</span>
-            <span className="text-[#6B7280] text-sm">/hour</span>
+            <span className="text-[#6B7280]">/hour</span>
           </div>
-          <p className="text-sm text-[#6B7280]">Min. {car.minBookingHours} hrs · {formatCurrency(car.hourlyPrice * 24)}/day</p>
+          <p className="text-sm text-[#6B7280] mt-1">Min. {car.minBookingHours} hrs · {formatCurrency(car.hourlyPrice * 24)}/day</p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="p-5 space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="p-5 space-y-3.5">
+          {/* Date/time fields */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-xs font-semibold text-[#6B7280] mb-1.5 flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5" />Pickup Date
+              <Label className="text-xs font-bold text-[#6B7280] mb-1.5 flex items-center gap-1">
+                <Calendar className="h-3.5 w-3.5 text-[#FF7A00]" />Pickup Date
               </Label>
               <input type="date" min={today} {...register("pickupDate")}
                 className={cn("w-full h-10 px-3 rounded-xl border bg-[#F8F9FB] text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] transition-colors",
@@ -78,19 +88,19 @@ export function BookingForm({ car }: BookingFormProps) {
               />
             </div>
             <div>
-              <Label className="text-xs font-semibold text-[#6B7280] mb-1.5 flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5" />Pickup Time
+              <Label className="text-xs font-bold text-[#6B7280] mb-1.5 flex items-center gap-1">
+                <Clock className="h-3.5 w-3.5 text-[#FF7A00]" />Pickup Time
               </Label>
               <input type="time" {...register("pickupTime")}
-                className="w-full h-10 px-3 rounded-xl border border-[#E5E7EB] bg-[#F8F9FB] text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] transition-colors"
+                className="w-full h-10 px-3 rounded-xl border border-[#E5E7EB] bg-[#F8F9FB] text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-xs font-semibold text-[#6B7280] mb-1.5 flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5" />Return Date
+              <Label className="text-xs font-bold text-[#6B7280] mb-1.5 flex items-center gap-1">
+                <Calendar className="h-3.5 w-3.5 text-[#FF7A00]" />Return Date
               </Label>
               <input type="date" min={pickupDate || today} {...register("returnDate")}
                 className={cn("w-full h-10 px-3 rounded-xl border bg-[#F8F9FB] text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] transition-colors",
@@ -99,37 +109,37 @@ export function BookingForm({ car }: BookingFormProps) {
               {errors.returnDate && <p className="text-xs text-red-500 mt-1">{errors.returnDate.message}</p>}
             </div>
             <div>
-              <Label className="text-xs font-semibold text-[#6B7280] mb-1.5 flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5" />Return Time
+              <Label className="text-xs font-bold text-[#6B7280] mb-1.5 flex items-center gap-1">
+                <Clock className="h-3.5 w-3.5 text-[#FF7A00]" />Return Time
               </Label>
               <input type="time" {...register("returnTime")}
-                className="w-full h-10 px-3 rounded-xl border border-[#E5E7EB] bg-[#F8F9FB] text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] transition-colors"
+                className="w-full h-10 px-3 rounded-xl border border-[#E5E7EB] bg-[#F8F9FB] text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
               />
             </div>
           </div>
 
           {minHoursNotMet && (
-            <div className="flex gap-2 p-3 rounded-xl bg-[#FFF8F3] border border-[#FF7A00]/20">
-              <AlertCircle className="h-4 w-4 text-[#FF7A00] shrink-0 mt-0.5" />
-              <p className="text-xs text-[#FF7A00]">Minimum booking is {BOOKING_MIN_HOURS} hours.</p>
+            <div className="flex gap-2 p-3 rounded-xl bg-amber-50 border border-amber-200">
+              <AlertCircle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+              <p className="text-xs text-amber-700">Minimum booking duration is {BOOKING_MIN_HOURS} hours.</p>
             </div>
           )}
 
-          {/* Rental Amount — ONLY show rental, no deposit */}
+          {/* RENTAL AMOUNT ONLY — no deposit */}
           {hours > 0 && !minHoursNotMet && (
-            <div className="rounded-2xl bg-[#FFF8F3] border border-[#FF7A00]/20 p-4">
+            <div className="rounded-2xl bg-[#FFF8F3] border border-[#FF7A00]/15 p-4">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-[#6B7280]">Duration</span>
-                <span className="text-sm font-semibold text-[#111827]">{Math.round(hours)} hours</span>
+                <span className="text-sm font-bold text-[#111827]">{Math.round(hours)} hours</span>
               </div>
-              <Separator className="my-2" />
+              <Separator className="my-2.5 bg-[#FF7A00]/10" />
               <div className="flex justify-between items-center">
-                <span className="font-semibold text-[#111827]">Rental Amount</span>
-                <span className="text-xl font-bold text-[#FF7A00]">{formatCurrency(rentalAmount)}</span>
+                <span className="font-bold text-[#111827]">Rental Amount</span>
+                <span className="text-2xl font-bold text-[#FF7A00]">{formatCurrency(rentalAmount)}</span>
               </div>
               <p className="text-xs text-[#6B7280] mt-2 flex items-center gap-1">
-                <Shield className="h-3 w-3" />
-                Other charges collected after booking approval
+                <Shield className="h-3 w-3 text-[#FF7A00]" />
+                Deposit & other charges after admin approval
               </p>
             </div>
           )}
@@ -137,7 +147,7 @@ export function BookingForm({ car }: BookingFormProps) {
           <Button type="submit" variant="gradient" size="xl" className="w-full" disabled={!car.available || minHoursNotMet}>
             {!car.available ? "Currently Unavailable" : "Book Now"}
           </Button>
-          <p className="text-center text-xs text-[#6B7280]">Free cancellation up to 24 hours before pickup</p>
+          <p className="text-center text-xs text-[#6B7280]">Free cancellation · No hidden charges</p>
         </form>
       </div>
 
