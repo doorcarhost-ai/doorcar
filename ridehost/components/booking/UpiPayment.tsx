@@ -1,16 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  AlertCircle,
-  Camera,
-  CheckCircle,
-  Clock,
-  Copy,
-  ImageIcon,
-  Info,
-  Upload,
+  AlertCircle, Camera, CheckCircle, Clock, Copy,
+  ImageIcon, RefreshCw, Shield, UploadCloud, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,221 +22,318 @@ interface UpiPaymentProps {
 }
 
 function useCountdown(minutes: number) {
-  const totalSeconds = minutes * 60;
-  const [seconds, setSeconds] = useState(totalSeconds);
+  const totalSec = minutes * 60;
+  const [seconds, setSeconds] = useState(totalSec);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    setSeconds(totalSec);
+  }, [refreshKey, totalSec]);
 
   useEffect(() => {
     if (seconds <= 0) return;
     const t = setInterval(() => setSeconds((s) => s - 1), 1000);
     return () => clearInterval(t);
-  }, [seconds]);
+  }, [seconds, refreshKey]);
 
+  const refresh = () => setRefreshKey((k) => k + 1);
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
-  const expired = seconds <= 0;
-  const urgent = seconds <= 60;
+  const pct = (seconds / totalSec) * 100;
 
-  return { mins, secs, expired, urgent, seconds };
+  return { mins, secs, expired: seconds <= 0, urgent: seconds <= 60, pct, refresh };
 }
 
 export function UpiPayment({ amount, purpose, onSubmit, isLoading }: UpiPaymentProps) {
-  const { mins, secs, expired, urgent } = useCountdown(UPI_CONFIG.reservationMinutes);
+  const { mins, secs, expired, urgent, pct, refresh } = useCountdown(UPI_CONFIG.reservationMinutes);
   const [utr, setUtr] = useState("");
   const [utrError, setUtrError] = useState("");
   const [screenshot, setScreenshot] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const [copied, setCopied] = useState<"id" | "amount" | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const camRef = useRef<HTMLInputElement>(null);
 
   const upiString = `upi://pay?pa=${UPI_CONFIG.upiId}&pn=${encodeURIComponent(UPI_CONFIG.upiName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(purpose)}`;
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiString)}`;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiString)}&color=111827&bgcolor=ffffff&qzone=2`;
 
-  const handleCopy = (text: string) => {
+  const copy = (text: string, key: "id" | "amount") => {
     navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setCopied(key);
+    setTimeout(() => setCopied(null), 2000);
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setScreenshot(reader.result as string);
-      reader.readAsDataURL(file);
-    }
+  const processFile = (file: File) => {
+    if (!file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onloadend = () => setScreenshot(reader.result as string);
+    reader.readAsDataURL(file);
   };
+
+  const onDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) processFile(file);
+  }, []);
+
+  const canSubmit = utr.trim().length >= 10 && !!screenshot && !expired;
 
   const handleSubmit = () => {
     if (!utr.trim()) { setUtrError("Please enter the UTR number"); return; }
-    if (utr.trim().length < 10) { setUtrError("UTR number must be at least 10 characters"); return; }
+    if (utr.trim().length < 10) { setUtrError("UTR must be at least 10 characters"); return; }
     if (!screenshot) { setUtrError("Please upload payment screenshot"); return; }
     setUtrError("");
     onSubmit({ utrNumber: utr.trim(), screenshotUrl: screenshot });
   };
 
   return (
-    <div className="space-y-5">
-      {/* Timer */}
+    <div className="space-y-4">
+
+      {/* ── Timer ── */}
       <div className={cn(
-        "flex items-center justify-between p-4 rounded-2xl border",
-        expired
-          ? "bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800"
-          : urgent
-          ? "bg-[#FFF8F3] dark:bg-[#FFF8F3]/20 border-[#FF7A00]/20 dark:border-[#FF7A00]/20"
-          : "bg-card border-border"
+        "rounded-2xl border p-4 transition-colors",
+        expired ? "bg-red-50 border-red-200" : urgent ? "bg-amber-50 border-amber-200" : "bg-white border-[#E5E7EB] shadow-premium"
       )}>
-        <div className="flex items-center gap-2">
-          <Clock className={cn("h-5 w-5", expired ? "text-red-500" : urgent ? "text-[#FF7A00]" : "text-primary")} />
-          <div>
-            <p className="text-sm font-semibold">
-              {expired ? "Reservation Expired" : "Complete payment within"}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {expired ? "Please refresh the page" : "QR & UPI ID reserved for you"}
-            </p>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Clock className={cn("h-5 w-5", expired ? "text-red-500" : urgent ? "text-amber-500" : "text-[#FF7A00]")} />
+            <div>
+              <p className="text-sm font-bold text-[#111827]">
+                {expired ? "Session Expired" : "Complete payment within"}
+              </p>
+              <p className="text-xs text-[#6B7280]">
+                {expired ? "Please refresh to get a new QR" : "QR reserved exclusively for you"}
+              </p>
+            </div>
           </div>
-        </div>
-        {!expired && (
-          <div className={cn(
-            "font-mono font-bold text-xl tabular-nums",
-            urgent ? "text-[#FF7A00]" : "text-foreground"
-          )}>
-            {String(mins).padStart(2, "0")}:{String(secs).padStart(2, "0")}
-          </div>
-        )}
-      </div>
-
-      {/* Amount */}
-      <div className="bg-gradient-to-r from-[#FF7A00] to-[#FF9A3C] rounded-2xl p-5 text-white text-center">
-        <p className="text-sm font-medium text-white/80 mb-1">{purpose}</p>
-        <p className="text-4xl font-bold">{formatCurrency(amount)}</p>
-      </div>
-
-      {/* QR Code */}
-      <div className="bg-card border border-border rounded-2xl p-5">
-        <h3 className="font-semibold mb-4 text-center">Scan QR Code to Pay</h3>
-        <div className="flex flex-col items-center">
-          <div className="p-3 bg-white rounded-2xl shadow-md mb-4 border border-border">
-            <Image
-              src={qrUrl}
-              alt="UPI QR Code"
-              width={180}
-              height={180}
-              className="rounded-xl"
-              unoptimized
-            />
-          </div>
-          <p className="text-xs text-muted-foreground text-center mb-2">
-            Scan using any UPI app • PhonePe • GPay • Paytm • BHIM
-          </p>
-        </div>
-
-        <div className="border-t border-border pt-4 mt-2">
-          <p className="text-xs text-muted-foreground mb-2 text-center">Or pay directly via UPI ID</p>
-          <div className="flex items-center gap-2 bg-muted rounded-xl p-3">
-            <span className="flex-1 text-sm font-mono font-semibold text-center">
-              {UPI_CONFIG.upiId}
-            </span>
+          <div className="flex items-center gap-2">
+            {!expired && (
+              <motion.div
+                key={`${mins}:${secs}`}
+                initial={{ scale: 1.1 }}
+                animate={{ scale: 1 }}
+                className={cn(
+                  "font-mono font-bold text-2xl tabular-nums",
+                  urgent ? "text-amber-600" : "text-[#111827]"
+                )}
+              >
+                {String(mins).padStart(2, "0")}:{String(secs).padStart(2, "0")}
+              </motion.div>
+            )}
             <button
-              onClick={() => handleCopy(UPI_CONFIG.upiId)}
-              className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-background transition-colors shrink-0"
+              onClick={refresh}
+              className="h-8 w-8 flex items-center justify-center rounded-xl bg-[#F8F9FB] border border-[#E5E7EB] hover:border-[#FF7A00]/40 transition-colors"
+              title="Refresh QR"
             >
-              {copied ? (
-                <CheckCircle className="h-4 w-4 text-green-500" />
-              ) : (
-                <Copy className="h-4 w-4 text-muted-foreground" />
-              )}
+              <RefreshCw className="h-3.5 w-3.5 text-[#6B7280]" />
             </button>
           </div>
-          <p className="text-xs text-muted-foreground text-center mt-2">
-            Account Name: <span className="font-semibold">{UPI_CONFIG.upiName}</span>
+        </div>
+        {/* Progress bar */}
+        <div className="h-1.5 bg-[#E5E7EB] rounded-full overflow-hidden">
+          <motion.div
+            className={cn("h-full rounded-full", expired ? "bg-red-400" : urgent ? "bg-amber-400" : "bg-[#FF7A00]")}
+            initial={{ width: "100%" }}
+            animate={{ width: `${pct}%` }}
+            transition={{ duration: 0.5 }}
+          />
+        </div>
+      </div>
+
+      {/* ── Amount card ── */}
+      <div className="bg-gradient-to-r from-[#FF7A00] to-[#FF9A3C] rounded-3xl p-5 text-white shadow-orange text-center">
+        <p className="text-sm font-medium text-white/80 mb-1">{purpose}</p>
+        <motion.p
+          key={amount}
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="text-4xl font-bold mb-3"
+        >
+          {formatCurrency(amount)}
+        </motion.p>
+        <button
+          onClick={() => copy(amount.toString(), "amount")}
+          className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white/20 hover:bg-white/30 text-sm font-medium transition-colors"
+        >
+          {copied === "amount" ? <><CheckCircle className="h-3.5 w-3.5" />Copied!</> : <><Copy className="h-3.5 w-3.5" />Copy Amount</>}
+        </button>
+      </div>
+
+      {/* ── QR Code ── */}
+      <div className="bg-white rounded-3xl border border-[#E5E7EB] shadow-premium p-6">
+        <h3 className="font-bold text-[#111827] text-center mb-5">Scan & Pay</h3>
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={expired ? "expired" : "active"}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="flex justify-center mb-5"
+          >
+            <div className={cn(
+              "p-4 rounded-2xl border-2 shadow-premium-lg transition-all",
+              expired ? "border-red-200 opacity-30 grayscale" : "border-[#FF7A00]/20"
+            )}>
+              <Image src={qrUrl} alt="UPI QR" width={200} height={200} className="rounded-xl" unoptimized />
+            </div>
+          </motion.div>
+        </AnimatePresence>
+
+        {/* UPI ID copy */}
+        <div className="bg-[#F8F9FB] rounded-2xl p-4 border border-[#E5E7EB]">
+          <p className="text-xs text-[#6B7280] text-center mb-2 font-medium">Or pay using UPI ID</p>
+          <div className="flex items-center gap-2 bg-white rounded-xl border border-[#E5E7EB] px-3 py-2">
+            <span className="flex-1 text-sm font-mono font-bold text-[#111827] text-center">{UPI_CONFIG.upiId}</span>
+            <button
+              onClick={() => copy(UPI_CONFIG.upiId, "id")}
+              className="h-7 w-7 flex items-center justify-center rounded-lg bg-[#FF7A00]/10 hover:bg-[#FF7A00]/20 transition-colors shrink-0"
+            >
+              {copied === "id" ? <CheckCircle className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5 text-[#FF7A00]" />}
+            </button>
+          </div>
+          <p className="text-xs text-[#6B7280] text-center mt-2">
+            Name: <span className="font-semibold text-[#111827]">{UPI_CONFIG.upiName}</span>
+          </p>
+          <p className="text-xs text-center mt-1 text-[#6B7280]">
+            Works with PhonePe · GPay · Paytm · BHIM · Any UPI app
           </p>
         </div>
       </div>
 
-      {/* UTR Input */}
-      <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
+      {/* ── Confirm Payment ── */}
+      <div className="bg-white rounded-3xl border border-[#E5E7EB] shadow-premium p-6 space-y-5">
         <div>
-          <h3 className="font-semibold mb-1">Confirm Payment</h3>
-          <p className="text-xs text-muted-foreground">Enter the UTR/Transaction ID after paying</p>
+          <h3 className="font-bold text-[#111827] mb-1">Confirm Your Payment</h3>
+          <p className="text-sm text-[#6B7280]">Enter UTR and upload screenshot after paying</p>
         </div>
 
+        {/* UTR */}
         <div>
-          <Label className="mb-1.5">UTR / Transaction ID *</Label>
+          <Label className="text-sm font-semibold text-[#111827] mb-2">
+            UTR / Transaction ID <span className="text-red-500">*</span>
+          </Label>
           <Input
             value={utr}
             onChange={(e) => { setUtr(e.target.value); setUtrError(""); }}
-            placeholder="e.g. 123456789012"
-            className="font-mono"
+            placeholder="12-digit UTR number e.g. 123456789012"
+            className={cn(
+              "font-mono h-12 text-base rounded-xl",
+              utr.length >= 10 ? "border-green-400 focus:border-green-500" : ""
+            )}
           />
-          <p className="text-xs text-muted-foreground mt-1">
-            Find UTR in your UPI app under transaction details
-          </p>
+          <div className="flex items-center justify-between mt-1.5">
+            <p className="text-xs text-[#6B7280]">Find in your UPI app under Transaction Details</p>
+            {utr.length > 0 && (
+              <span className={cn("text-xs font-semibold", utr.length >= 10 ? "text-green-600" : "text-[#FF7A00]")}>
+                {utr.length}/10+
+              </span>
+            )}
+          </div>
         </div>
 
+        {/* Screenshot drag-drop */}
         <div>
-          <Label className="mb-2">Payment Screenshot *</Label>
+          <Label className="text-sm font-semibold text-[#111827] mb-2">
+            Payment Screenshot <span className="text-red-500">*</span>
+          </Label>
+
           {screenshot ? (
             <div className="relative">
-              <div className="relative h-40 rounded-xl overflow-hidden border border-border">
-                <Image src={screenshot} alt="Payment screenshot" fill className="object-cover" sizes="400px" />
+              <div className="relative h-44 rounded-2xl overflow-hidden border-2 border-green-400 bg-gray-100">
+                <Image src={screenshot} alt="Payment proof" fill className="object-cover" sizes="500px" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                  <CheckCircle className="h-3 w-3" />Screenshot Added
+                </div>
               </div>
               <button
                 onClick={() => setScreenshot(null)}
-                className="absolute top-2 right-2 h-7 w-7 rounded-full bg-destructive text-white flex items-center justify-center text-xs font-bold"
+                className="absolute top-2 right-2 h-8 w-8 flex items-center justify-center rounded-full bg-white border border-[#E5E7EB] shadow-sm hover:bg-red-50 transition-colors"
               >
-                ✕
+                <X className="h-4 w-4 text-[#6B7280]" />
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-2">
-              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
-              <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileSelect} />
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-border hover:border-primary transition-colors"
-              >
-                <ImageIcon className="h-5 w-5 text-muted-foreground" />
-                <span className="text-xs font-medium">Gallery</span>
-              </button>
-              <button
-                onClick={() => cameraInputRef.current?.click()}
-                className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-border hover:border-primary transition-colors"
-              >
-                <Camera className="h-5 w-5 text-muted-foreground" />
-                <span className="text-xs font-medium">Camera</span>
-              </button>
+            <div
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={onDrop}
+              className={cn(
+                "border-2 border-dashed rounded-2xl p-6 transition-all text-center",
+                dragOver ? "border-[#FF7A00] bg-[#FFF8F3]" : "border-[#E5E7EB] hover:border-[#FF7A00]/50 hover:bg-[#FFF8F3]/50"
+              )}
+            >
+              <div className="flex justify-center mb-3">
+                <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center transition-colors", dragOver ? "bg-[#FF7A00]/15" : "bg-[#F8F9FB] border border-[#E5E7EB]")}>
+                  <UploadCloud className={cn("h-7 w-7 transition-colors", dragOver ? "text-[#FF7A00]" : "text-[#6B7280]")} />
+                </div>
+              </div>
+              <p className="text-sm font-semibold text-[#111827] mb-1">
+                {dragOver ? "Drop your screenshot here" : "Upload Payment Screenshot"}
+              </p>
+              <p className="text-xs text-[#6B7280] mb-4">Drag & drop or choose from camera / gallery</p>
+
+              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { if (e.target.files?.[0]) processFile(e.target.files[0]); }} />
+              <input ref={camRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { if (e.target.files?.[0]) processFile(e.target.files[0]); }} />
+
+              <div className="flex gap-2 justify-center">
+                <Button type="button" variant="outline" size="sm" className="gap-1.5" onClick={() => fileRef.current?.click()}>
+                  <ImageIcon className="h-3.5 w-3.5" />Gallery
+                </Button>
+                <Button type="button" variant="outline" size="sm" className="gap-1.5" onClick={() => camRef.current?.click()}>
+                  <Camera className="h-3.5 w-3.5" />Camera
+                </Button>
+              </div>
             </div>
           )}
         </div>
 
         {utrError && (
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-red-50 border border-red-200">
             <AlertCircle className="h-4 w-4 text-red-500 shrink-0" />
-            <p className="text-xs text-red-700 dark:text-red-400">{utrError}</p>
+            <p className="text-xs text-red-700 font-medium">{utrError}</p>
           </div>
         )}
 
-        <div className="bg-muted/50 rounded-xl p-3 flex items-start gap-2">
-          <Info className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-          <p className="text-xs text-muted-foreground">
-            Your booking will be confirmed only after admin verifies the payment. This usually takes 15-30 minutes.
+        <div className="flex items-start gap-2 p-3 bg-[#F8F9FB] rounded-xl border border-[#E5E7EB]">
+          <Shield className="h-4 w-4 text-[#FF7A00] mt-0.5 shrink-0" />
+          <p className="text-xs text-[#6B7280]">
+            Your booking is confirmed only after admin verifies the payment. Typically takes <span className="font-semibold text-[#111827]">15–30 minutes</span>.
           </p>
         </div>
 
         <Button
           variant="gradient"
-          size="lg"
-          className="w-full gap-2"
+          size="xl"
+          className="w-full gap-2 relative"
           onClick={handleSubmit}
-          disabled={isLoading || expired}
+          disabled={!canSubmit || !!isLoading}
         >
           {isLoading ? (
             <><div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Submitting...</>
           ) : (
-            <><Upload className="h-4 w-4" />Submit Payment Details</>
+            <><UploadCloud className="h-4 w-4" />Submit Payment Details</>
+          )}
+          {!canSubmit && !isLoading && (
+            <span className="absolute right-4 text-xs text-white/60">
+              {!utr || utr.length < 10 ? "UTR missing" : "Screenshot missing"}
+            </span>
           )}
         </Button>
+
+        {/* Step indicators */}
+        <div className="grid grid-cols-2 gap-2">
+          <div className={cn("flex items-center gap-2 p-2 rounded-xl text-xs font-medium", utr.length >= 10 ? "bg-green-50 text-green-700 border border-green-200" : "bg-[#F8F9FB] text-[#6B7280] border border-[#E5E7EB]")}>
+            {utr.length >= 10 ? <CheckCircle className="h-3.5 w-3.5" /> : <span className="h-3.5 w-3.5 rounded-full border border-current" />}
+            UTR Entered
+          </div>
+          <div className={cn("flex items-center gap-2 p-2 rounded-xl text-xs font-medium", screenshot ? "bg-green-50 text-green-700 border border-green-200" : "bg-[#F8F9FB] text-[#6B7280] border border-[#E5E7EB]")}>
+            {screenshot ? <CheckCircle className="h-3.5 w-3.5" /> : <span className="h-3.5 w-3.5 rounded-full border border-current" />}
+            Screenshot Uploaded
+          </div>
+        </div>
       </div>
     </div>
   );
