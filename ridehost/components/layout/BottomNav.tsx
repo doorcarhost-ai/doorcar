@@ -15,9 +15,8 @@ const navItems = [
 
 export function BottomNav() {
   const pathname = usePathname();
-
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-background/95 backdrop-blur-md border-t border-border shadow-lg">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white/95 backdrop-blur-xl border-t border-[#E5E7EB]">
       <div className="grid grid-cols-4 py-1">
         {navItems.map(({ href, label, icon: Icon }) => {
           const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -25,18 +24,11 @@ export function BottomNav() {
             <Link key={href} href={href} className="flex flex-col items-center gap-1 py-2 relative">
               <div className="relative">
                 {isActive && (
-                  <motion.div
-                    layoutId="bottomNavIndicator"
-                    className="absolute -inset-2 rounded-xl bg-primary/10"
-                    initial={false}
-                    transition={{ type: "spring", duration: 0.4 }}
-                  />
+                  <motion.div layoutId="nav-indicator" className="absolute -inset-2 rounded-xl bg-[#FF7A00]/10" initial={false} transition={{ type: "spring", duration: 0.4 }} />
                 )}
-                <Icon className={cn("h-5 w-5 relative z-10 transition-colors", isActive ? "text-primary" : "text-muted-foreground")} />
+                <Icon className={cn("h-5 w-5 relative z-10 transition-colors", isActive ? "text-[#FF7A00]" : "text-[#6B7280]")} />
               </div>
-              <span className={cn("text-[10px] font-medium transition-colors", isActive ? "text-primary" : "text-muted-foreground")}>
-                {label}
-              </span>
+              <span className={cn("text-[10px] font-medium transition-colors", isActive ? "text-[#FF7A00]" : "text-[#6B7280]")}>{label}</span>
             </Link>
           );
         })}

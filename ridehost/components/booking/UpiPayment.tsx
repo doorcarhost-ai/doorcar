@@ -87,11 +87,11 @@ export function UpiPayment({ amount, purpose, onSubmit, isLoading }: UpiPaymentP
         expired
           ? "bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800"
           : urgent
-          ? "bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800"
+          ? "bg-[#FFF8F3] dark:bg-[#FFF8F3]/20 border-[#FF7A00]/20 dark:border-[#FF7A00]/20"
           : "bg-card border-border"
       )}>
         <div className="flex items-center gap-2">
-          <Clock className={cn("h-5 w-5", expired ? "text-red-500" : urgent ? "text-amber-500" : "text-primary")} />
+          <Clock className={cn("h-5 w-5", expired ? "text-red-500" : urgent ? "text-[#FF7A00]" : "text-primary")} />
           <div>
             <p className="text-sm font-semibold">
               {expired ? "Reservation Expired" : "Complete payment within"}
@@ -104,7 +104,7 @@ export function UpiPayment({ amount, purpose, onSubmit, isLoading }: UpiPaymentP
         {!expired && (
           <div className={cn(
             "font-mono font-bold text-xl tabular-nums",
-            urgent ? "text-amber-600" : "text-foreground"
+            urgent ? "text-[#FF7A00]" : "text-foreground"
           )}>
             {String(mins).padStart(2, "0")}:{String(secs).padStart(2, "0")}
           </div>
@@ -112,7 +112,7 @@ export function UpiPayment({ amount, purpose, onSubmit, isLoading }: UpiPaymentP
       </div>
 
       {/* Amount */}
-      <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-5 text-white text-center">
+      <div className="bg-gradient-to-r from-[#FF7A00] to-[#FF9A3C] rounded-2xl p-5 text-white text-center">
         <p className="text-sm font-medium text-white/80 mb-1">{purpose}</p>
         <p className="text-4xl font-bold">{formatCurrency(amount)}</p>
       </div>

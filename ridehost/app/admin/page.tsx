@@ -203,7 +203,7 @@ export default function AdminPage() {
 
   const stats = [
     { label: "Total Cars", value: MOCK_CARS.length, icon: Car, color: "text-blue-600 bg-blue-50 dark:bg-blue-950/30" },
-    { label: "Active Bookings", value: 3, icon: Timer, color: "text-amber-600 bg-amber-50 dark:bg-amber-950/30" },
+    { label: "Active Bookings", value: 3, icon: Timer, color: "text-[#FF7A00] bg-[#FFF8F3] dark:bg-[#FFF8F3]/30" },
     { label: "Pending Approval", value: pendingBookings.length + 2, icon: Shield, color: "text-orange-600 bg-orange-50 dark:bg-orange-950/30" },
     { label: "Total Users", value: 1241, icon: Users, color: "text-green-600 bg-green-50 dark:bg-green-950/30" },
   ];
@@ -213,7 +213,7 @@ export default function AdminPage() {
       <header className="bg-secondary text-secondary-foreground border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-[#FF7A00] to-[#FF9A3C] flex items-center justify-center">
               <Settings className="h-5 w-5 text-white" />
             </div>
             <div>

@@ -1,27 +1,16 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Bell,
-  Car,
-  ChevronDown,
-  Heart,
-  LogOut,
-  MapPin,
-  Menu,
-  Moon,
-  Settings,
-  Sun,
-  User,
-  X,
+  Bell, Car, ChevronDown, LogOut, MapPin, Menu, Moon, Search,
+  Settings, Sun, User, X,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { INDIA_CITIES } from "@/lib/cities";
 import { APP_NAME } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -30,100 +19,105 @@ import { MOCK_USER } from "@/data/mock-data";
 const navLinks = [
   { href: "/cars", label: "Explore Cars" },
   { href: "/trips", label: "My Trips" },
+  { href: "/admin", label: "Admin" },
 ];
-
-const popularCities = INDIA_CITIES.slice(0, 12);
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [cityDropdown, setCityDropdown] = useState(false);
-  const [profileDropdown, setProfileDropdown] = useState(false);
+  const [cityOpen, setCityOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [citySearch, setCitySearch] = useState("");
   const [selectedCity, setSelectedCity] = useState("Bangalore");
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
+  const cityRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const fn = () => setScrolled(window.scrollY > 8);
+    window.addEventListener("scroll", fn);
+    return () => window.removeEventListener("scroll", fn);
   }, []);
 
   useEffect(() => {
     setMenuOpen(false);
-    setCityDropdown(false);
-    setProfileDropdown(false);
+    setCityOpen(false);
+    setProfileOpen(false);
   }, [pathname]);
+
+  const filteredCities = citySearch
+    ? INDIA_CITIES.filter((c) => c.name.toLowerCase().includes(citySearch.toLowerCase())).slice(0, 8)
+    : INDIA_CITIES.slice(0, 10);
 
   return (
     <>
-      <header
-        className={cn(
-          "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-          scrolled
-            ? "bg-background/95 backdrop-blur-md border-b border-border shadow-sm"
-            : "bg-transparent"
-        )}
-      >
+      <header className={cn(
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+        scrolled ? "bg-white/95 backdrop-blur-xl border-b border-[#E5E7EB] shadow-sm" : "bg-white/80 backdrop-blur-sm"
+      )}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 shadow-md">
+            <Link href="/" className="flex items-center gap-2.5 shrink-0">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#FF7A00] shadow-orange">
                 <Car className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent">
-                {APP_NAME}
+              <span className="text-xl font-bold text-[#111827] tracking-tight">
+                Ride<span className="text-[#FF7A00]">Host</span>
               </span>
             </Link>
 
-            {/* City Selector */}
-            <div className="hidden md:block relative">
+            {/* City — desktop */}
+            <div ref={cityRef} className="hidden md:block relative">
               <button
-                onClick={() => { setCityDropdown(!cityDropdown); setProfileDropdown(false); }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium hover:bg-accent transition-colors"
+                onClick={() => { setCityOpen(!cityOpen); setProfileOpen(false); }}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-[#6B7280] hover:text-[#111827] hover:bg-gray-50 transition-colors"
               >
-                <MapPin className="h-4 w-4 text-primary" />
-                <span>{selectedCity}</span>
-                <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", cityDropdown && "rotate-180")} />
+                <MapPin className="h-4 w-4 text-[#FF7A00]" />
+                <span className="text-[#111827] font-semibold">{selectedCity}</span>
+                <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-200", cityOpen && "rotate-180")} />
               </button>
               <AnimatePresence>
-                {cityDropdown && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    className="absolute top-full left-0 mt-2 w-56 bg-popover border border-border rounded-2xl shadow-xl p-2 z-50 max-h-72 overflow-y-auto"
+                {cityOpen && (
+                  <motion.div initial={{ opacity: 0, y: -6, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6, scale: 0.97 }} transition={{ duration: 0.15 }}
+                    className="absolute top-full left-0 mt-2 w-64 bg-white border border-[#E5E7EB] rounded-2xl shadow-premium-lg p-3 z-50"
                   >
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 py-1 mb-1">Popular Cities</p>
-                    {popularCities.map((city) => (
-                      <button
-                        key={city.id}
-                        onClick={() => { setSelectedCity(city.name); setCityDropdown(false); }}
-                        className={cn(
-                          "flex items-center gap-2 w-full px-3 py-2 rounded-xl text-sm hover:bg-accent transition-colors",
-                          selectedCity === city.name && "bg-primary/10 text-primary font-medium"
-                        )}
-                      >
-                        <MapPin className="h-3.5 w-3.5 shrink-0" />
-                        {city.name}
-                        <span className="text-xs text-muted-foreground ml-auto">{city.state.slice(0, 3)}</span>
-                      </button>
-                    ))}
+                    <div className="relative mb-2">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#6B7280]" />
+                      <input
+                        autoFocus
+                        placeholder="Search city..."
+                        value={citySearch}
+                        onChange={(e) => setCitySearch(e.target.value)}
+                        className="w-full pl-8 pr-3 h-8 text-sm bg-gray-50 rounded-xl border border-[#E5E7EB] focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00]"
+                      />
+                    </div>
+                    {!citySearch && <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider px-2 py-1">Popular Cities</p>}
+                    <div className="max-h-52 overflow-y-auto space-y-0.5">
+                      {filteredCities.map((city) => (
+                        <button key={city.id} onClick={() => { setSelectedCity(city.name); setCityOpen(false); setCitySearch(""); }}
+                          className={cn("flex items-center justify-between w-full px-3 py-2 rounded-xl text-sm transition-colors",
+                            selectedCity === city.name ? "bg-[#FF7A00]/10 text-[#FF7A00] font-semibold" : "hover:bg-gray-50 text-[#111827]"
+                          )}
+                        >
+                          <span className="flex items-center gap-2"><MapPin className="h-3.5 w-3.5 text-[#6B7280]" />{city.name}</span>
+                          <span className="text-xs text-[#6B7280]">{city.state.slice(0, 6)}</span>
+                        </button>
+                      ))}
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
 
-            {/* Nav Links */}
-            <nav className="hidden md:flex items-center gap-1">
+            {/* Nav */}
+            <nav className="hidden md:flex items-center gap-0.5">
               {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={cn(
-                    "px-4 py-2 rounded-xl text-sm font-medium transition-colors",
-                    pathname === link.href ? "bg-primary/10 text-primary" : "hover:bg-accent"
+                <Link key={link.href} href={link.href}
+                  className={cn("px-4 py-2 rounded-xl text-sm font-medium transition-colors",
+                    pathname === link.href || pathname.startsWith(link.href + "/")
+                      ? "bg-[#FF7A00]/10 text-[#FF7A00]"
+                      : "text-[#6B7280] hover:text-[#111827] hover:bg-gray-50"
                   )}
                 >
                   {link.label}
@@ -132,66 +126,62 @@ export function Header() {
             </nav>
 
             {/* Right */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="h-9 w-9 flex items-center justify-center rounded-xl hover:bg-accent transition-colors"
+                className="h-9 w-9 flex items-center justify-center rounded-xl text-[#6B7280] hover:text-[#111827] hover:bg-gray-50 transition-colors"
               >
                 <Sun className="h-4 w-4 dark:hidden" />
                 <Moon className="h-4 w-4 hidden dark:block" />
               </button>
 
-              <Link href="/trips" className="h-9 w-9 hidden md:flex items-center justify-center rounded-xl hover:bg-accent transition-colors relative">
+              <Link href="/trips" className="h-9 w-9 hidden md:flex items-center justify-center rounded-xl text-[#6B7280] hover:text-[#111827] hover:bg-gray-50 transition-colors relative">
                 <Bell className="h-4 w-4" />
-                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary" />
+                <span className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-[#FF7A00]" />
               </Link>
 
-              {/* Profile */}
+              {/* Profile dropdown — desktop */}
               <div className="hidden md:block relative">
                 <button
-                  onClick={() => { setProfileDropdown(!profileDropdown); setCityDropdown(false); }}
-                  className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-xl hover:bg-accent transition-colors"
+                  onClick={() => { setProfileOpen(!profileOpen); setCityOpen(false); }}
+                  className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-xl hover:bg-gray-50 transition-colors"
                 >
                   <Avatar className="h-7 w-7">
-                    <AvatarImage src={MOCK_USER.avatar} alt={MOCK_USER.name} />
-                    <AvatarFallback>{MOCK_USER.name.charAt(0)}</AvatarFallback>
+                    <AvatarImage src={MOCK_USER.avatar} />
+                    <AvatarFallback className="bg-[#FF7A00]/10 text-[#FF7A00] text-xs font-bold">{MOCK_USER.name.charAt(0)}</AvatarFallback>
                   </Avatar>
-                  <span className="text-sm font-medium">{MOCK_USER.name.split(" ")[0]}</span>
-                  <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", profileDropdown && "rotate-180")} />
+                  <span className="text-sm font-semibold text-[#111827]">{MOCK_USER.name.split(" ")[0]}</span>
+                  <ChevronDown className={cn("h-3.5 w-3.5 text-[#6B7280] transition-transform", profileOpen && "rotate-180")} />
                 </button>
                 <AnimatePresence>
-                  {profileDropdown && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      className="absolute top-full right-0 mt-2 w-56 bg-popover border border-border rounded-2xl shadow-xl p-2 z-50"
+                  {profileOpen && (
+                    <motion.div initial={{ opacity: 0, y: -6, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6, scale: 0.97 }} transition={{ duration: 0.15 }}
+                      className="absolute top-full right-0 mt-2 w-52 bg-white border border-[#E5E7EB] rounded-2xl shadow-premium-lg p-2 z-50"
                     >
-                      <div className="px-3 py-2 mb-2">
-                        <p className="font-semibold">{MOCK_USER.name}</p>
-                        <p className="text-xs text-muted-foreground">{MOCK_USER.email}</p>
-                        <Badge variant="secondary" className="mt-1 text-xs">{MOCK_USER.totalTrips} trips</Badge>
+                      <div className="px-3 py-2.5 mb-1 border-b border-[#E5E7EB]">
+                        <p className="font-semibold text-sm text-[#111827]">{MOCK_USER.name}</p>
+                        <p className="text-xs text-[#6B7280] mt-0.5">{MOCK_USER.email}</p>
                       </div>
-                      <div className="border-t border-border pt-2 space-y-0.5">
-                        <DropdownItem href="/profile" icon={User} label="My Profile" />
-                        <DropdownItem href="/trips" icon={Car} label="My Trips" />
-                        <DropdownItem href="/profile" icon={Heart} label="Wishlist" />
-                        <DropdownItem href="/admin" icon={Settings} label="Admin Panel" />
-                        <div className="border-t border-border pt-2 mt-2">
-                          <button className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-sm text-destructive hover:bg-destructive/10 transition-colors">
-                            <LogOut className="h-4 w-4" />Sign Out
-                          </button>
-                        </div>
+                      {[
+                        { href: "/profile", icon: User, label: "My Profile" },
+                        { href: "/trips", icon: Car, label: "My Trips" },
+                        { href: "/admin", icon: Settings, label: "Admin Panel" },
+                      ].map((item) => (
+                        <Link key={item.href} href={item.href} className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[#6B7280] hover:text-[#111827] hover:bg-gray-50 transition-colors">
+                          <item.icon className="h-4 w-4" />{item.label}
+                        </Link>
+                      ))}
+                      <div className="border-t border-[#E5E7EB] mt-1 pt-1">
+                        <button className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-sm text-red-500 hover:bg-red-50 transition-colors">
+                          <LogOut className="h-4 w-4" />Sign Out
+                        </button>
                       </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
 
-              <button
-                onClick={() => setMenuOpen(!menuOpen)}
-                className="md:hidden h-9 w-9 flex items-center justify-center rounded-xl hover:bg-accent transition-colors"
-              >
+              <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden h-9 w-9 flex items-center justify-center rounded-xl hover:bg-gray-50 transition-colors text-[#6B7280]">
                 {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
             </div>
@@ -202,78 +192,56 @@ export function Header() {
       {/* Mobile Menu */}
       <AnimatePresence>
         {menuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="fixed top-16 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b border-border md:hidden overflow-hidden"
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+            className="fixed top-16 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-b border-[#E5E7EB] md:hidden overflow-hidden"
           >
             <div className="px-4 py-4 space-y-2">
-              <div className="flex items-center gap-2 px-3 py-3 rounded-xl bg-muted">
-                <MapPin className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium">City: {selectedCity}</span>
-                <button onClick={() => setCityDropdown(!cityDropdown)} className="ml-auto text-xs text-primary font-semibold">Change</button>
+              <div className="flex items-center gap-2 px-3 py-3 rounded-xl bg-gray-50">
+                <MapPin className="h-4 w-4 text-[#FF7A00]" />
+                <span className="text-sm font-semibold text-[#111827]">{selectedCity}</span>
+                <button onClick={() => setCityOpen(!cityOpen)} className="ml-auto text-xs text-[#FF7A00] font-bold">Change</button>
               </div>
-              {cityDropdown && (
-                <div className="grid grid-cols-2 gap-2 px-1 max-h-40 overflow-y-auto">
-                  {popularCities.map((city) => (
-                    <button
-                      key={city.id}
-                      onClick={() => { setSelectedCity(city.name); setCityDropdown(false); }}
-                      className={cn(
-                        "flex items-center gap-2 px-3 py-2 rounded-xl text-sm border border-border hover:border-primary transition-colors",
-                        selectedCity === city.name && "border-primary bg-primary/10 text-primary"
-                      )}
-                    >
-                      <MapPin className="h-3.5 w-3.5" />{city.name}
-                    </button>
-                  ))}
+              {cityOpen && (
+                <div className="p-2 bg-gray-50 rounded-xl">
+                  <input
+                    placeholder="Search city..."
+                    value={citySearch}
+                    onChange={(e) => setCitySearch(e.target.value)}
+                    className="w-full px-3 h-8 text-sm bg-white rounded-lg border border-[#E5E7EB] focus:outline-none mb-2"
+                  />
+                  <div className="grid grid-cols-2 gap-1.5 max-h-32 overflow-y-auto">
+                    {filteredCities.map((city) => (
+                      <button key={city.id} onClick={() => { setSelectedCity(city.name); setCityOpen(false); setCitySearch(""); setMenuOpen(false); }}
+                        className={cn("px-3 py-2 rounded-lg text-sm text-left transition-colors", selectedCity === city.name ? "bg-[#FF7A00] text-white font-semibold" : "bg-white text-[#111827] border border-[#E5E7EB]")}
+                      >
+                        {city.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
               {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-colors",
-                    pathname === link.href ? "bg-primary/10 text-primary" : "hover:bg-accent"
+                <Link key={link.href} href={link.href}
+                  className={cn("flex items-center px-3 py-3 rounded-xl text-sm font-medium transition-colors",
+                    pathname.startsWith(link.href) ? "bg-[#FF7A00]/10 text-[#FF7A00]" : "text-[#6B7280] hover:text-[#111827] hover:bg-gray-50"
                   )}
                 >
                   {link.label}
                 </Link>
               ))}
-              <Link href="/admin" className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium hover:bg-accent transition-colors">
-                Admin Panel
-              </Link>
-              <div className="border-t border-border pt-3 mt-3 flex items-center gap-3">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={MOCK_USER.avatar} />
-                  <AvatarFallback>{MOCK_USER.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-semibold text-sm">{MOCK_USER.name}</p>
-                  <p className="text-xs text-muted-foreground">{MOCK_USER.email}</p>
-                </div>
-                <Link href="/profile" className="ml-auto">
-                  <Button size="sm" variant="outline">Profile</Button>
-                </Link>
+              <div className="flex items-center gap-3 px-3 py-3 border-t border-[#E5E7EB] mt-2 pt-4">
+                <Avatar className="h-10 w-10"><AvatarImage src={MOCK_USER.avatar} /><AvatarFallback>{MOCK_USER.name.charAt(0)}</AvatarFallback></Avatar>
+                <div><p className="font-semibold text-sm">{MOCK_USER.name}</p><p className="text-xs text-[#6B7280]">{MOCK_USER.email}</p></div>
+                <Link href="/profile" className="ml-auto"><Button size="sm" variant="outline">Profile</Button></Link>
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {(cityDropdown || profileDropdown) && (
-        <div className="fixed inset-0 z-30" onClick={() => { setCityDropdown(false); setProfileDropdown(false); }} />
+      {(cityOpen || profileOpen) && (
+        <div className="fixed inset-0 z-30" onClick={() => { setCityOpen(false); setProfileOpen(false); }} />
       )}
     </>
-  );
-}
-
-function DropdownItem({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) {
-  return (
-    <Link href={href} className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm hover:bg-accent transition-colors">
-      <Icon className="h-4 w-4 text-muted-foreground" />{label}
-    </Link>
   );
 }

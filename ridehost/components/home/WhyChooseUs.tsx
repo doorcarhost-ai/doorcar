@@ -5,65 +5,60 @@ import { BadgeIndianRupee, Clock, FileCheck, Headphones, ShieldCheck, Zap } from
 import { WHY_CHOOSE_US } from "@/lib/constants";
 
 const iconMap: Record<string, React.ReactNode> = {
-  ShieldCheck: <ShieldCheck className="h-7 w-7" />,
-  BadgeIndianRupee: <BadgeIndianRupee className="h-7 w-7" />,
-  HeadphonesIcon: <Headphones className="h-7 w-7" />,
-  Zap: <Zap className="h-7 w-7" />,
-  Clock: <Clock className="h-7 w-7" />,
-  FileCheck: <FileCheck className="h-7 w-7" />,
+  ShieldCheck: <ShieldCheck className="h-6 w-6" />,
+  BadgeIndianRupee: <BadgeIndianRupee className="h-6 w-6" />,
+  HeadphonesIcon: <Headphones className="h-6 w-6" />,
+  Zap: <Zap className="h-6 w-6" />,
+  Clock: <Clock className="h-6 w-6" />,
+  FileCheck: <FileCheck className="h-6 w-6" />,
 };
 
-const colors = [
-  "bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400",
-  "bg-green-50 dark:bg-green-950/20 text-green-600 dark:text-green-400",
-  "bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400",
-  "bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400",
-  "bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400",
-  "bg-teal-50 dark:bg-teal-950/20 text-teal-600 dark:text-teal-400",
+const iconColors = [
+  "bg-[#FF7A00]/10 text-[#FF7A00]",
+  "bg-green-50 text-green-600",
+  "bg-blue-50 text-blue-600",
+  "bg-orange-50 text-orange-600",
+  "bg-rose-50 text-rose-600",
+  "bg-teal-50 text-teal-600",
 ];
 
 export function WhyChooseUs() {
   return (
-    <section className="py-20 px-4 sm:px-6 bg-secondary text-secondary-foreground">
-      <div className="max-w-7xl mx-auto">
+    <section className="py-20 bg-[#F8F9FB]">
+      <div className="px-4 sm:px-6 max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-2xl sm:text-3xl font-bold mb-3 text-white"
+          <motion.p initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+            className="text-sm font-bold text-[#FF7A00] uppercase tracking-widest mb-3"
           >
-            Why Choose{" "}
-            <span className="bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
-              RideHost?
-            </span>
+            Why Choose Us
+          </motion.p>
+          <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}
+            className="text-2xl sm:text-4xl font-bold text-[#111827] mb-3"
+          >
+            The RideHost Difference
           </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-white/50 max-w-xl mx-auto"
+          <motion.p initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.15 }}
+            className="text-[#6B7280] max-w-lg mx-auto"
           >
-            We&apos;re committed to providing the safest, most convenient and affordable self-drive experience in India
+            We&apos;re building India&apos;s most trusted self-drive car rental experience
           </motion.p>
         </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {WHY_CHOOSE_US.map((item, idx) => (
             <motion.div
               key={item.title}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: idx * 0.1 }}
-              className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/8 transition-colors"
+              transition={{ delay: idx * 0.09 }}
+              whileHover={{ y: -4 }}
+              className="bg-white rounded-3xl border border-[#E5E7EB] p-6 shadow-premium hover:shadow-premium-lg transition-all"
             >
-              <div className={`inline-flex h-14 w-14 items-center justify-center rounded-2xl mb-5 ${colors[idx]}`}>
+              <div className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl mb-4 ${iconColors[idx]}`}>
                 {iconMap[item.icon]}
               </div>
-              <h3 className="text-lg font-semibold mb-2 text-white">{item.title}</h3>
-              <p className="text-sm text-white/50 leading-relaxed">{item.description}</p>
+              <h3 className="text-base font-bold text-[#111827] mb-2">{item.title}</h3>
+              <p className="text-sm text-[#6B7280] leading-relaxed">{item.description}</p>
             </motion.div>
           ))}
         </div>

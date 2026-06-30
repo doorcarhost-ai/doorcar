@@ -75,8 +75,8 @@ function DocUploadCard({ title, description, icon: Icon, doc, onUpload }: DocUpl
     <div className="bg-card border border-border rounded-2xl p-5">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center">
-            <Icon className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+          <div className="h-10 w-10 rounded-xl bg-[#FFF8F3] dark:bg-[#FFF8F3]/30 flex items-center justify-center">
+            <Icon className="h-5 w-5 text-[#FF7A00] dark:text-[#FF7A00]" />
           </div>
           <div>
             <p className="font-semibold text-sm">{title}</p>
@@ -192,13 +192,13 @@ function ProfileContent() {
         >
           <div className="flex items-center gap-4">
             <div className="relative">
-              <Avatar className="h-20 w-20 border-2 border-amber-500/40">
+              <Avatar className="h-20 w-20 border-2 border-[#FF7A00]/20/40">
                 <AvatarImage src={MOCK_USER.avatar} alt={MOCK_USER.name} />
                 <AvatarFallback className="text-2xl bg-gray-700">{MOCK_USER.name.charAt(0)}</AvatarFallback>
               </Avatar>
               <button
                 onClick={() => setEditOpen(true)}
-                className="absolute bottom-0 right-0 h-7 w-7 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center shadow-md"
+                className="absolute bottom-0 right-0 h-7 w-7 rounded-full bg-gradient-to-r from-[#FF7A00] to-[#FF9A3C] flex items-center justify-center shadow-md"
               >
                 <Edit className="h-3.5 w-3.5 text-white" />
               </button>
@@ -207,7 +207,7 @@ function ProfileContent() {
               <div className="flex items-center gap-2 mb-0.5">
                 <h1 className="text-xl font-bold truncate">{name}</h1>
                 {verification.overallStatus === "verified" && (
-                  <BadgeCheck className="h-5 w-5 text-amber-400 shrink-0" />
+                  <BadgeCheck className="h-5 w-5 text-[#FF7A00] shrink-0" />
                 )}
               </div>
               <p className="text-white/60 text-sm">{MOCK_USER.email}</p>
@@ -239,7 +239,7 @@ function ProfileContent() {
             <TabsTrigger value="verification" className="relative">
               Verification
               {verification.overallStatus === "not_uploaded" && (
-                <span className="ml-1.5 h-2 w-2 rounded-full bg-amber-500" />
+                <span className="ml-1.5 h-2 w-2 rounded-full bg-[#FFF8F3]" />
               )}
             </TabsTrigger>
           </TabsList>
@@ -247,12 +247,12 @@ function ProfileContent() {
           <TabsContent value="profile" className="space-y-4">
             {/* Verification CTA */}
             {verification.overallStatus !== "verified" && (
-              <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 flex items-center justify-between gap-3">
+              <div className="bg-gradient-to-r from-[#FF7A00]/10 to-[#FF9A3C]/10 border border-[#FF7A00]/20 dark:border-[#FF7A00]/20 rounded-2xl p-4 flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+                  <p className="text-sm font-semibold text-[#FF7A00] dark:text-[#FF7A00]">
                     {verification.overallStatus === "not_uploaded" ? "Complete Verification" : "Verification In Progress"}
                   </p>
-                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
+                  <p className="text-xs text-[#FF7A00] dark:text-[#FF7A00] mt-0.5">
                     {verification.overallStatus === "not_uploaded"
                       ? "Upload your documents to start booking"
                       : "Your documents are under admin review"}
@@ -375,8 +375,8 @@ function ProfileContent() {
             {/* Verification header */}
             <div className="bg-card border border-border rounded-2xl p-5">
               <div className="flex items-center gap-3 mb-3">
-                <div className="h-10 w-10 rounded-xl bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center">
-                  <Shield className="h-5 w-5 text-amber-600" />
+                <div className="h-10 w-10 rounded-xl bg-[#FFF8F3] dark:bg-[#FFF8F3]/30 flex items-center justify-center">
+                  <Shield className="h-5 w-5 text-[#FF7A00]" />
                 </div>
                 <div>
                   <h2 className="font-bold">Identity Verification</h2>
@@ -395,8 +395,8 @@ function ProfileContent() {
               </div>
 
               {allDocsUploaded && verification.overallStatus === "not_uploaded" && (
-                <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-xl">
-                  <p className="text-xs text-amber-700 dark:text-amber-400">
+                <div className="mt-3 p-3 bg-[#FFF8F3] dark:bg-[#FFF8F3]/20 border border-[#FF7A00]/20 dark:border-[#FF7A00]/20 rounded-xl">
+                  <p className="text-xs text-[#FF7A00] dark:text-[#FF7A00]">
                     All documents uploaded. Awaiting admin approval. You will be notified once verified.
                   </p>
                 </div>
@@ -437,7 +437,7 @@ function ProfileContent() {
                   "Admin reviews documents within 2-4 hours",
                 ].map((g, i) => (
                   <li key={i} className="text-xs text-muted-foreground flex items-start gap-2">
-                    <span className="text-amber-500 mt-0.5">•</span>{g}
+                    <span className="text-[#FF7A00] mt-0.5">•</span>{g}
                   </li>
                 ))}
               </ul>
@@ -457,7 +457,7 @@ function ProfileContent() {
                   <AvatarImage src={MOCK_USER.avatar} />
                   <AvatarFallback>{name.charAt(0)}</AvatarFallback>
                 </Avatar>
-                <button className="absolute bottom-0 right-0 h-7 w-7 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center">
+                <button className="absolute bottom-0 right-0 h-7 w-7 rounded-full bg-gradient-to-r from-[#FF7A00] to-[#FF9A3C] flex items-center justify-center">
                   <Edit className="h-3.5 w-3.5 text-white" />
                 </button>
               </div>

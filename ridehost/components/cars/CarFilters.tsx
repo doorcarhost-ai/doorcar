@@ -55,12 +55,12 @@ export function CarFilters({
             <button
               key={option.id}
               onClick={() => onFilterChange({ sortBy: option.id })}
-              className={cn(
-                "w-full text-left px-3 py-2 rounded-xl text-sm transition-colors",
-                filters.sortBy === option.id
-                  ? "bg-primary text-primary-foreground font-medium"
-                  : "hover:bg-accent"
-              )}
+            className={cn(
+                        "w-full text-left px-3 py-2 rounded-xl text-sm transition-colors",
+                        filters.sortBy === option.id
+                          ? "bg-[#FF7A00] text-white font-semibold"
+                          : "hover:bg-gray-50 text-[#6B7280]"
+                      )}
             >
               {option.label}
             </button>
@@ -206,7 +206,7 @@ export function CarFilters({
     <>
       {/* Desktop Sidebar */}
       <aside className="hidden lg:block w-64 shrink-0">
-        <div className="sticky top-20 bg-card border border-border rounded-2xl p-5 max-h-[calc(100vh-6rem)] overflow-y-auto">
+        <div className="sticky top-20 bg-white border border-[#E5E7EB] rounded-3xl p-5 max-h-[calc(100vh-6rem)] overflow-y-auto shadow-premium">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-bold text-lg flex items-center gap-2">
               <SlidersHorizontal className="h-4 w-4" />

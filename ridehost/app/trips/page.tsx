@@ -277,8 +277,8 @@ export default function TripsPage() {
           <DialogHeader><DialogTitle>Cancel Booking</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">Are you sure you want to cancel this booking?</p>
-            <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-xl p-3">
-              <p className="text-xs text-amber-700 dark:text-amber-400">Free cancellation if cancelled 24+ hours before pickup. 50% charge within 24 hours.</p>
+            <div className="bg-[#FFF8F3] dark:bg-[#FFF8F3]/20 border border-[#FF7A00]/20 dark:border-[#FF7A00]/20 rounded-xl p-3">
+              <p className="text-xs text-[#FF7A00] dark:text-[#FF7A00]">Free cancellation if cancelled 24+ hours before pickup. 50% charge within 24 hours.</p>
             </div>
             <div className="flex gap-3">
               <Button variant="outline" className="flex-1" onClick={() => setCancelDialog(false)}>Keep Booking</Button>
@@ -289,7 +289,7 @@ export default function TripsPage() {
       </Dialog>
 
       <Link href="/cars">
-        <button className="fixed bottom-24 right-4 md:bottom-8 h-14 w-14 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-xl shadow-amber-500/30 flex items-center justify-center hover:shadow-amber-500/50 transition-shadow">
+        <button className="fixed bottom-24 right-4 md:bottom-8 h-14 w-14 rounded-full bg-gradient-to-br from-[#FF7A00] to-[#FF9A3C] text-white shadow-xl shadow-orange/30 flex items-center justify-center hover:shadow-orange/50 transition-shadow">
           <Plus className="h-6 w-6" />
         </button>
       </Link>

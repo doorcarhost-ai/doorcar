@@ -88,11 +88,11 @@ function CompleteBookingContent() {
           <Badge variant="success">Rental Approved</Badge>
         </div>
 
-        <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 mb-6 flex items-start gap-3">
-          <Info className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
+        <div className="bg-[#FFF8F3] dark:bg-[#FFF8F3]/20 border border-[#FF7A00]/20 dark:border-[#FF7A00]/20 rounded-2xl p-4 mb-6 flex items-start gap-3">
+          <Info className="h-5 w-5 text-[#FF7A00] mt-0.5 shrink-0" />
           <div>
-            <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">Your rental payment has been approved!</p>
-            <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+            <p className="text-sm font-semibold text-[#FF7A00] dark:text-[#FF7A00]">Your rental payment has been approved!</p>
+            <p className="text-xs text-[#FF7A00] dark:text-[#FF7A00] mt-1">
               Please complete the booking by paying the remaining charges below. Your booking will be confirmed after admin verifies this payment.
             </p>
           </div>

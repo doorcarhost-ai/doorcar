@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, Calendar, Clock, Info, Receipt } from "lucide-react";
+import { AlertCircle, Calendar, Clock, Shield } from "lucide-react";
 import { Car } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -22,7 +22,8 @@ interface BookingFormProps {
 
 export function BookingForm({ car }: BookingFormProps) {
   const router = useRouter();
-  const [bookingCalc, setBookingCalc] = useState({ hours: 0, rentalAmount: 0 });
+  const [rentalAmount, setRentalAmount] = useState(0);
+  const [hours, setHours] = useState(0);
   const [verificationGateOpen, setVerificationGateOpen] = useState(false);
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm<BookingFormData>({
@@ -34,109 +35,109 @@ export function BookingForm({ car }: BookingFormProps) {
 
   useEffect(() => {
     if (pickupDate && pickupTime && returnDate && returnTime) {
-      const hours = calculateHours(pickupDate, pickupTime, returnDate, returnTime);
-      if (hours > 0) {
-        const { rentalAmount } = calculateBookingAmount(hours, car.hourlyPrice, car.minBookingHours, car.extraHourCharge);
-        const extraHours = Math.max(0, Math.max(hours, car.minBookingHours) - car.minBookingHours);
-        const extraCharges = extraHours * car.extraHourCharge;
-        setBookingCalc({ hours, rentalAmount: rentalAmount + extraCharges });
+      const h = calculateHours(pickupDate, pickupTime, returnDate, returnTime);
+      if (h > 0) {
+        const { rentalAmount: base } = calculateBookingAmount(h, car.hourlyPrice, car.minBookingHours, car.extraHourCharge);
+        const extraH = Math.max(0, Math.max(h, car.minBookingHours) - car.minBookingHours);
+        setHours(h);
+        setRentalAmount(base + extraH * car.extraHourCharge);
       }
     }
   }, [pickupDate, pickupTime, returnDate, returnTime, car]);
 
   const onSubmit = (data: BookingFormData) => {
     const isVerified = MOCK_USER.verification.overallStatus === "verified";
-    if (!isVerified) {
-      setVerificationGateOpen(true);
-      return;
-    }
-    const params = new URLSearchParams({
-      pickupDate: data.pickupDate,
-      pickupTime: data.pickupTime,
-      returnDate: data.returnDate,
-      returnTime: data.returnTime,
-      hours: bookingCalc.hours.toString(),
-    });
+    if (!isVerified) { setVerificationGateOpen(true); return; }
+    const params = new URLSearchParams({ pickupDate: data.pickupDate, pickupTime: data.pickupTime, returnDate: data.returnDate, returnTime: data.returnTime, hours: hours.toString() });
     router.push(`/booking/${car.id}?${params.toString()}`);
   };
 
-  const minHoursNotMet = bookingCalc.hours > 0 && bookingCalc.hours < BOOKING_MIN_HOURS;
+  const minHoursNotMet = hours > 0 && hours < BOOKING_MIN_HOURS;
 
   return (
     <>
-      <div className="bg-card border border-border rounded-2xl overflow-hidden sticky top-24 shadow-lg">
-        <div className="p-5 border-b border-border bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20">
+      <div className="bg-white rounded-3xl border border-[#E5E7EB] shadow-premium-lg overflow-hidden sticky top-24">
+        {/* Price header */}
+        <div className="p-5 border-b border-[#E5E7EB] bg-gradient-to-r from-[#FFF8F3] to-[#FFFAF5]">
           <div className="flex items-baseline gap-1 mb-1">
-            <span className="text-2xl font-bold">{formatCurrency(car.hourlyPrice)}</span>
-            <span className="text-muted-foreground text-sm">/hour</span>
+            <span className="text-3xl font-bold text-[#111827]">{formatCurrency(car.hourlyPrice)}</span>
+            <span className="text-[#6B7280] text-sm">/hour</span>
           </div>
-          <p className="text-sm text-muted-foreground">Min. {car.minBookingHours} hours · {formatCurrency(car.dailyPrice)}/day</p>
+          <p className="text-sm text-[#6B7280]">Min. {car.minBookingHours} hrs · {formatCurrency(car.hourlyPrice * 24)}/day</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="p-5 space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-xs font-medium mb-1.5 flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />Pickup Date</Label>
+              <Label className="text-xs font-semibold text-[#6B7280] mb-1.5 flex items-center gap-1">
+                <Calendar className="h-3.5 w-3.5" />Pickup Date
+              </Label>
               <input type="date" min={today} {...register("pickupDate")}
-                className={cn("w-full h-10 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring", errors.pickupDate && "border-destructive")}
+                className={cn("w-full h-10 px-3 rounded-xl border bg-[#F8F9FB] text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] transition-colors",
+                  errors.pickupDate ? "border-red-400" : "border-[#E5E7EB]")}
               />
             </div>
             <div>
-              <Label className="text-xs font-medium mb-1.5 flex items-center gap-1"><Clock className="h-3.5 w-3.5" />Pickup Time</Label>
+              <Label className="text-xs font-semibold text-[#6B7280] mb-1.5 flex items-center gap-1">
+                <Clock className="h-3.5 w-3.5" />Pickup Time
+              </Label>
               <input type="time" {...register("pickupTime")}
-                className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full h-10 px-3 rounded-xl border border-[#E5E7EB] bg-[#F8F9FB] text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] transition-colors"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-xs font-medium mb-1.5 flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />Return Date</Label>
+              <Label className="text-xs font-semibold text-[#6B7280] mb-1.5 flex items-center gap-1">
+                <Calendar className="h-3.5 w-3.5" />Return Date
+              </Label>
               <input type="date" min={pickupDate || today} {...register("returnDate")}
-                className={cn("w-full h-10 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring", errors.returnDate && "border-destructive")}
+                className={cn("w-full h-10 px-3 rounded-xl border bg-[#F8F9FB] text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] transition-colors",
+                  errors.returnDate ? "border-red-400" : "border-[#E5E7EB]")}
               />
-              {errors.returnDate && <p className="text-xs text-destructive mt-1">{errors.returnDate.message}</p>}
+              {errors.returnDate && <p className="text-xs text-red-500 mt-1">{errors.returnDate.message}</p>}
             </div>
             <div>
-              <Label className="text-xs font-medium mb-1.5 flex items-center gap-1"><Clock className="h-3.5 w-3.5" />Return Time</Label>
+              <Label className="text-xs font-semibold text-[#6B7280] mb-1.5 flex items-center gap-1">
+                <Clock className="h-3.5 w-3.5" />Return Time
+              </Label>
               <input type="time" {...register("returnTime")}
-                className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full h-10 px-3 rounded-xl border border-[#E5E7EB] bg-[#F8F9FB] text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] transition-colors"
               />
             </div>
           </div>
 
           {minHoursNotMet && (
-            <div className="flex gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
-              <AlertCircle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
-              <p className="text-xs text-amber-700 dark:text-amber-400">Minimum booking duration is {BOOKING_MIN_HOURS} hours.</p>
+            <div className="flex gap-2 p-3 rounded-xl bg-[#FFF8F3] border border-[#FF7A00]/20">
+              <AlertCircle className="h-4 w-4 text-[#FF7A00] shrink-0 mt-0.5" />
+              <p className="text-xs text-[#FF7A00]">Minimum booking is {BOOKING_MIN_HOURS} hours.</p>
             </div>
           )}
 
-          {bookingCalc.hours > 0 && !minHoursNotMet && (
-            <div className="rounded-xl bg-muted/50 p-4 space-y-2.5">
-              <div className="flex items-center gap-1.5 text-sm font-semibold mb-3">
-                <Receipt className="h-4 w-4 text-primary" />Rental Amount
+          {/* Rental Amount — ONLY show rental, no deposit */}
+          {hours > 0 && !minHoursNotMet && (
+            <div className="rounded-2xl bg-[#FFF8F3] border border-[#FF7A00]/20 p-4">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm text-[#6B7280]">Duration</span>
+                <span className="text-sm font-semibold text-[#111827]">{Math.round(hours)} hours</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Duration</span>
-                <span className="font-medium">{Math.round(bookingCalc.hours)} hours</span>
+              <Separator className="my-2" />
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-[#111827]">Rental Amount</span>
+                <span className="text-xl font-bold text-[#FF7A00]">{formatCurrency(rentalAmount)}</span>
               </div>
-              <Separator />
-              <div className="flex justify-between font-bold">
-                <span>Rental Amount</span>
-                <span className="text-primary">{formatCurrency(bookingCalc.rentalAmount)}</span>
-              </div>
-              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                <Info className="h-3 w-3" />
-                Security deposit & other charges collected separately after approval
+              <p className="text-xs text-[#6B7280] mt-2 flex items-center gap-1">
+                <Shield className="h-3 w-3" />
+                Other charges collected after booking approval
               </p>
             </div>
           )}
 
-          <Button type="submit" variant="gradient" size="lg" className="w-full" disabled={!car.available || minHoursNotMet}>
-            {!car.available ? "Not Available" : "Book Now"}
+          <Button type="submit" variant="gradient" size="xl" className="w-full" disabled={!car.available || minHoursNotMet}>
+            {!car.available ? "Currently Unavailable" : "Book Now"}
           </Button>
-          <p className="text-center text-xs text-muted-foreground">Free cancellation up to 24 hours before pickup</p>
+          <p className="text-center text-xs text-[#6B7280]">Free cancellation up to 24 hours before pickup</p>
         </form>
       </div>
 

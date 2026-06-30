@@ -172,9 +172,9 @@ export default function BookingPage({ params }: BookingPageProps) {
                         </div>
                       </div>
                     </div>
-                    <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
-                      <p className="text-sm text-amber-800 dark:text-amber-300 font-medium mb-1">First Payment: Rental Only</p>
-                      <p className="text-xs text-amber-600 dark:text-amber-400">
+                    <div className="bg-[#FFF8F3] dark:bg-[#FFF8F3]/20 border border-[#FF7A00]/20 dark:border-[#FF7A00]/20 rounded-xl p-4">
+                      <p className="text-sm text-[#FF7A00] dark:text-[#FF7A00] font-medium mb-1">First Payment: Rental Only</p>
+                      <p className="text-xs text-[#FF7A00] dark:text-[#FF7A00]">
                         You pay only the rental amount now. Security deposit & other charges are collected after admin approves your rental payment.
                       </p>
                     </div>
@@ -211,10 +211,10 @@ export default function BookingPage({ params }: BookingPageProps) {
                 <motion.div key="step4" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
                   <div className="bg-card border border-border rounded-2xl p-8 text-center">
                     <div className="relative inline-flex mb-6">
-                      <div className="h-20 w-20 rounded-full bg-amber-100 dark:bg-amber-950 flex items-center justify-center">
-                        <CheckCircle className="h-10 w-10 text-amber-600 dark:text-amber-400" />
+                      <div className="h-20 w-20 rounded-full bg-[#FFF8F3] dark:bg-[#FFF8F3] flex items-center justify-center">
+                        <CheckCircle className="h-10 w-10 text-[#FF7A00] dark:text-[#FF7A00]" />
                       </div>
-                      <motion.div className="absolute inset-0 rounded-full bg-amber-400 opacity-40" initial={{ scale: 0.8 }} animate={{ scale: 1.5, opacity: 0 }} transition={{ duration: 1, repeat: Infinity }} />
+                      <motion.div className="absolute inset-0 rounded-full bg-[#FFF8F3] opacity-40" initial={{ scale: 0.8 }} animate={{ scale: 1.5, opacity: 0 }} transition={{ duration: 1, repeat: Infinity }} />
                     </div>
                     <h2 className="text-2xl font-bold mb-2">Payment Submitted!</h2>
                     <p className="text-muted-foreground mb-1">Your rental payment details have been submitted.</p>
