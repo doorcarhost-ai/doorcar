@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Car, Globe, MessageCircle, PlayCircle, Share2 } from "lucide-react";
 import { APP_NAME } from "@/lib/constants";
 
+
 const footerLinks = {
   Company: [
     { label: "About Us", href: "#" },

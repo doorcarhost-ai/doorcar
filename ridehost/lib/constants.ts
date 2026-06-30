@@ -17,12 +17,7 @@ export const CAR_CATEGORIES: {
 }[] = [
   { id: "suv", label: "SUV", icon: "🚙", description: "Spacious & powerful" },
   { id: "sedan", label: "Sedan", icon: "🚗", description: "Comfortable drive" },
-  {
-    id: "hatchback",
-    label: "Hatchback",
-    icon: "🚘",
-    description: "City perfect",
-  },
+  { id: "hatchback", label: "Hatchback", icon: "🚘", description: "City perfect" },
   { id: "luxury", label: "Luxury", icon: "✨", description: "Premium class" },
   { id: "ev", label: "Electric", icon: "⚡", description: "Eco friendly" },
   { id: "mpv", label: "MPV", icon: "🚐", description: "Family size" },
@@ -35,10 +30,7 @@ export const FUEL_TYPES: { id: FuelType; label: string; icon: string }[] = [
   { id: "hybrid", label: "Hybrid", icon: "🌿" },
 ];
 
-export const TRANSMISSION_TYPES: {
-  id: TransmissionType;
-  label: string;
-}[] = [
+export const TRANSMISSION_TYPES: { id: TransmissionType; label: string }[] = [
   { id: "automatic", label: "Automatic" },
   { id: "manual", label: "Manual" },
 ];
@@ -49,17 +41,6 @@ export const SORT_OPTIONS: { id: SortOption; label: string }[] = [
   { id: "rating", label: "Highest Rated" },
   { id: "trips", label: "Most Popular" },
   { id: "newest", label: "Newest First" },
-];
-
-export const CITIES = [
-  { id: "bangalore", name: "Bangalore", state: "Karnataka", image: "" },
-  { id: "mumbai", name: "Mumbai", state: "Maharashtra", image: "" },
-  { id: "delhi", name: "Delhi", state: "Delhi", image: "" },
-  { id: "hyderabad", name: "Hyderabad", state: "Telangana", image: "" },
-  { id: "chennai", name: "Chennai", state: "Tamil Nadu", image: "" },
-  { id: "pune", name: "Pune", state: "Maharashtra", image: "" },
-  { id: "kolkata", name: "Kolkata", state: "West Bengal", image: "" },
-  { id: "ahmedabad", name: "Ahmedabad", state: "Gujarat", image: "" },
 ];
 
 export const GOVERNMENT_ID_TYPES = [
@@ -86,38 +67,32 @@ export const NAV_ITEMS = [
 export const WHY_CHOOSE_US = [
   {
     title: "Verified Hosts",
-    description:
-      "Every car and host is thoroughly verified for your safety and peace of mind.",
+    description: "Every car and host is thoroughly verified for your safety and peace of mind.",
     icon: "ShieldCheck",
   },
   {
     title: "Best Prices",
-    description:
-      "Transparent pricing with no hidden charges. Get the best deals guaranteed.",
+    description: "Transparent pricing with no hidden charges. Get the best deals guaranteed.",
     icon: "BadgeIndianRupee",
   },
   {
     title: "24/7 Support",
-    description:
-      "Round-the-clock customer support to assist you anytime, anywhere.",
+    description: "Round-the-clock customer support to assist you anytime, anywhere.",
     icon: "HeadphonesIcon",
   },
   {
     title: "Easy Booking",
-    description:
-      "Book in under 2 minutes with our streamlined booking experience.",
+    description: "Book in under 2 minutes with our streamlined booking experience.",
     icon: "Zap",
   },
   {
     title: "Flexible Rentals",
-    description:
-      "Hourly, daily or weekly — rent on your terms with flexible return options.",
+    description: "Hourly, daily or weekly — rent on your terms with flexible return options.",
     icon: "Clock",
   },
   {
     title: "Fully Insured",
-    description:
-      "All rides are fully insured. Drive with confidence, we've got you covered.",
+    description: "All rides are fully insured. Drive with confidence, we've got you covered.",
     icon: "FileCheck",
   },
 ];
@@ -125,42 +100,88 @@ export const WHY_CHOOSE_US = [
 export const FAQS = [
   {
     question: "How does self-drive car rental work?",
-    answer:
-      "Simply search for available cars in your city, choose your preferred vehicle, select pickup and return dates, complete your booking with license and ID verification, and pick up the car at the designated location.",
+    answer: "Simply search for available cars in your city, choose your preferred vehicle, complete profile verification, select pickup and return dates, pay the rental amount via UPI, and pick up the car at the designated location after admin approval.",
   },
   {
     question: "What documents do I need to rent a car?",
-    answer:
-      "You need a valid driving license (at least 1 year old), a government-issued photo ID (Aadhaar, Passport, Voter ID), and a security deposit.",
+    answer: "You need a valid driving license (at least 1 year old), Aadhaar card, and a selfie for verification. All documents are uploaded once from your Profile section.",
   },
   {
     question: "Is there a minimum rental period?",
-    answer:
-      "The minimum rental period is 12 hours. You can book by the hour after that.",
+    answer: "The minimum rental period is 12 hours. You can book by the hour after that.",
+  },
+  {
+    question: "How does the payment work?",
+    answer: "RideHost uses a custom UPI payment system. First, you pay only the rental amount via UPI. After admin approves, you pay the security deposit and additional charges. Your booking is confirmed only after the second payment is approved.",
+  },
+  {
+    question: "Can I get home delivery?",
+    answer: "Yes, home delivery is available for select cars. The delivery fee is configured per vehicle and added to your second payment. You can also choose self-pickup at no extra charge.",
   },
   {
     question: "What is the security deposit?",
-    answer:
-      "The security deposit varies by car category, typically ranging from ₹2,000 to ₹10,000. It is fully refundable after the trip if the car is returned in the same condition.",
+    answer: "The security deposit varies by car category and is collected as part of the second payment (after rental approval). It is fully refundable after the trip.",
   },
   {
     question: "Can I extend my booking?",
-    answer:
-      "Yes, you can extend your booking through the app up to 2 hours before the scheduled return time, subject to availability.",
-  },
-  {
-    question: "What happens in case of breakdown?",
-    answer:
-      "Our 24/7 roadside assistance team will be dispatched immediately. We also provide a replacement vehicle if the repair takes more than 2 hours.",
-  },
-  {
-    question: "Is fuel included in the rental?",
-    answer:
-      "No, fuel is not included. You need to return the car with the same fuel level as when you picked it up.",
+    answer: "Yes, you can extend your booking through the app up to 2 hours before the scheduled return time, subject to availability.",
   },
   {
     question: "What are the cancellation charges?",
-    answer:
-      "Free cancellation up to 24 hours before pickup. 50% charge for cancellation within 24 hours. No refund for no-show.",
+    answer: "Free cancellation up to 24 hours before pickup. 50% charge for cancellation within 24 hours. No refund for no-show.",
   },
 ];
+
+// Booking status flow
+export const BOOKING_STATUSES = [
+  { id: "draft", label: "Draft", color: "secondary" },
+  { id: "rental_payment_pending", label: "Rental Payment Pending", color: "warning" },
+  { id: "rental_payment_submitted", label: "Rental Payment Submitted", color: "info" },
+  { id: "rental_payment_approved", label: "Rental Payment Approved", color: "success" },
+  { id: "complete_booking", label: "Complete Booking", color: "info" },
+  { id: "additional_charges_pending", label: "Additional Charges Pending", color: "warning" },
+  { id: "additional_charges_submitted", label: "Additional Charges Submitted", color: "info" },
+  { id: "additional_charges_approved", label: "Additional Charges Approved", color: "success" },
+  { id: "booking_confirmed", label: "Booking Confirmed", color: "success" },
+  { id: "vehicle_ready", label: "Vehicle Ready", color: "success" },
+  { id: "trip_started", label: "Trip Started", color: "success" },
+  { id: "trip_completed", label: "Trip Completed", color: "secondary" },
+  { id: "deposit_refunded", label: "Deposit Refunded", color: "secondary" },
+  { id: "cancelled", label: "Cancelled", color: "destructive" },
+] as const;
+
+export type BookingStatusId = (typeof BOOKING_STATUSES)[number]["id"];
+
+// Default admin config for a car
+export const DEFAULT_CAR_ADMIN_CONFIG = {
+  hourlyPrice: 85,
+  minimumHours: 12,
+  includedKm: 200,
+  extraKmCharge: 12,
+  extraHourCharge: 90,
+  securityDeposit: 5000,
+  platformFee: 199,
+  insuranceFee: 299,
+  cleaningCharges: 0,
+  fastagAdvance: 0,
+  enableHomeDelivery: true,
+  homeDeliveryFee: 499,
+  deliveryRadius: 20,
+  maxDeliveryDistance: 25,
+  estimatedDeliveryTime: "60-90 mins",
+  fuelPolicy: "Same level return",
+  pickupAddress: "HSR Layout, Bangalore - 560102",
+  pickupLat: 12.9116,
+  pickupLng: 77.6389,
+  pickupMapsUrl: "https://maps.google.com",
+  pickupContactPerson: "Host Name",
+  pickupContactNumber: "9876543210",
+  pickupTiming: "6:00 AM - 10:00 PM",
+};
+
+// UPI config (admin configures)
+export const UPI_CONFIG = {
+  upiId: "ridehost@upi",
+  upiName: "RideHost Rentals",
+  reservationMinutes: 10,
+};

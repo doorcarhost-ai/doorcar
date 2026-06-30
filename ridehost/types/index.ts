@@ -1,3 +1,5 @@
+import type { BookingStatusId } from "@/lib/constants";
+
 export interface Car {
   id: string;
   name: string;
@@ -36,24 +38,63 @@ export type CarCategory = "suv" | "sedan" | "hatchback" | "luxury" | "ev" | "mpv
 export type FuelType = "petrol" | "diesel" | "electric" | "hybrid";
 export type TransmissionType = "manual" | "automatic";
 
+export interface CarAdminConfig {
+  carId: string;
+  hourlyPrice: number;
+  minimumHours: number;
+  includedKm: number;
+  extraKmCharge: number;
+  extraHourCharge: number;
+  securityDeposit: number;
+  platformFee: number;
+  insuranceFee: number;
+  cleaningCharges: number;
+  fastagAdvance: number;
+  enableHomeDelivery: boolean;
+  homeDeliveryFee: number;
+  deliveryRadius: number;
+  maxDeliveryDistance: number;
+  estimatedDeliveryTime: string;
+  fuelPolicy: string;
+  pickupAddress: string;
+  pickupLat: number;
+  pickupLng: number;
+  pickupMapsUrl: string;
+  pickupContactPerson: string;
+  pickupContactNumber: string;
+  pickupTiming: string;
+  additionalCharges?: AdditionalCharge[];
+}
+
+export interface AdditionalCharge {
+  label: string;
+  amount: number;
+}
+
 export interface Booking {
   id: string;
   carId: string;
   car: Car;
   userId: string;
-  status: BookingStatus;
+  status: BookingStatusId;
   pickupDate: Date;
   pickupTime: string;
   returnDate: Date;
   returnTime: string;
   totalHours: number;
   rentalAmount: number;
+  deliveryOption: "self_pickup" | "home_delivery";
+  deliveryAddress?: DeliveryAddress;
   securityDeposit: number;
-  convenienceFee: number;
-  gst: number;
-  discount: number;
+  platformFee: number;
+  insuranceFee: number;
+  cleaningCharges: number;
+  fastagAdvance: number;
+  homeDeliveryFee: number;
+  additionalCharges: AdditionalCharge[];
   totalAmount: number;
-  couponCode?: string;
+  rentalPaymentUtr?: string;
+  secondPaymentUtr?: string;
   paymentMethod: PaymentMethod;
   paymentStatus: PaymentStatus;
   customerDetails: CustomerDetails;
@@ -62,7 +103,19 @@ export interface Booking {
   bookingReference: string;
 }
 
-export type BookingStatus = "upcoming" | "ongoing" | "completed" | "cancelled";
+export interface DeliveryAddress {
+  houseNumber: string;
+  buildingName: string;
+  street: string;
+  area: string;
+  landmark: string;
+  city: string;
+  state: string;
+  pincode: string;
+  mobileNumber: string;
+  specialInstructions: string;
+}
+
 export type PaymentMethod = "upi" | "card" | "netbanking" | "wallet";
 export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
 
@@ -70,15 +123,32 @@ export interface CustomerDetails {
   name: string;
   email: string;
   phone: string;
-  drivingLicenseNumber: string;
-  drivingLicenseExpiry: string;
+  drivingLicenseNumber?: string;
+  drivingLicenseExpiry?: string;
   drivingLicenseImage?: string;
-  governmentIdType: string;
-  governmentIdNumber: string;
+  governmentIdType?: string;
+  governmentIdNumber?: string;
   governmentIdImage?: string;
   emergencyContactName: string;
   emergencyContactPhone: string;
   emergencyContactRelation: string;
+}
+
+export interface VerificationDocument {
+  type: "driving_license" | "aadhaar" | "selfie";
+  fileUrl: string;
+  status: VerificationStatus;
+  uploadedAt: string;
+  rejectionReason?: string;
+}
+
+export type VerificationStatus = "not_uploaded" | "pending" | "verified" | "rejected";
+
+export interface UserVerification {
+  drivingLicense: VerificationDocument | null;
+  aadhaar: VerificationDocument | null;
+  selfie: VerificationDocument | null;
+  overallStatus: VerificationStatus;
 }
 
 export interface User {
@@ -87,8 +157,7 @@ export interface User {
   email: string;
   phone: string;
   avatar: string;
-  drivingLicense?: string;
-  governmentId?: string;
+  verification: UserVerification;
   savedAddresses: Address[];
   paymentMethods: SavedPaymentMethod[];
   totalTrips: number;
@@ -130,7 +199,6 @@ export interface Offer {
   discount: string;
   validTill: string;
   color: string;
-  image?: string;
 }
 
 export interface FilterState {
@@ -154,9 +222,8 @@ export interface BookingFormData {
   returnTime: string;
 }
 
-export interface City {
-  id: string;
-  name: string;
-  state: string;
-  image: string;
+export interface UpiPaymentData {
+  utrNumber: string;
+  screenshotFile?: File;
+  screenshotUrl?: string;
 }

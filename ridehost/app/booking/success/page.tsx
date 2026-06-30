@@ -90,7 +90,7 @@ function SuccessContent() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 border border-violet-200 dark:border-violet-800 rounded-2xl p-6 text-center mb-6"
+          className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border border-amber-200 dark:border-amber-800 rounded-2xl p-6 text-center mb-6"
         >
           <p className="text-sm text-muted-foreground mb-2">Booking Reference</p>
           <p className="text-3xl font-mono font-bold tracking-widest text-primary">

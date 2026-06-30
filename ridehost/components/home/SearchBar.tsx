@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Calendar, Clock, MapPin, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { INDIA_CITIES } from "@/lib/cities";
 
 export function SearchBar() {
   const router = useRouter();
@@ -23,6 +24,10 @@ export function SearchBar() {
 
   const today = new Date().toISOString().split("T")[0];
 
+  const filteredCities = INDIA_CITIES.filter((c) =>
+    c.name.toLowerCase().includes(location.toLowerCase())
+  ).slice(0, 6);
+
   return (
     <section className="relative z-20 -mt-8 px-4 sm:px-6 max-w-5xl mx-auto">
       <motion.div
@@ -33,11 +38,11 @@ export function SearchBar() {
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {/* Location */}
-          <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-muted hover:bg-accent transition-colors cursor-pointer">
+          <div className="relative flex items-center gap-3 px-4 py-3 rounded-2xl bg-muted hover:bg-accent transition-colors cursor-pointer">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 shrink-0">
               <MapPin className="h-4 w-4 text-primary" />
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-xs font-medium text-muted-foreground mb-0.5">
                 Pickup City
               </p>
@@ -49,6 +54,21 @@ export function SearchBar() {
                 className="bg-transparent text-sm font-semibold w-full outline-none placeholder:text-muted-foreground/60"
               />
             </div>
+            {location && filteredCities.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-2xl shadow-xl z-50 overflow-hidden">
+                {filteredCities.map((city) => (
+                  <button
+                    key={city.id}
+                    className="flex items-center gap-2 w-full px-4 py-2.5 text-sm hover:bg-accent transition-colors"
+                    onMouseDown={() => setLocation(city.name)}
+                  >
+                    <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+                    {city.name}
+                    <span className="text-xs text-muted-foreground ml-auto">{city.state}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Pickup Date */}

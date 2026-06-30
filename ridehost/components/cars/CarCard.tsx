@@ -44,7 +44,7 @@ export function CarCard({ car, index = 0 }: CarCardProps) {
       className="group relative bg-card rounded-2xl border border-border overflow-hidden hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
     >
       {/* Image */}
-      <div className="relative h-48 overflow-hidden bg-gradient-to-br from-muted to-muted/50">
+        <div className="relative h-48 overflow-hidden bg-muted">
         <Image
           src={car.images[0]}
           alt={car.name}

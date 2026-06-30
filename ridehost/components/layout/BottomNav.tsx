@@ -17,18 +17,12 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-background/95 backdrop-blur-md border-t border-border">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-background/95 backdrop-blur-md border-t border-border shadow-lg">
       <div className="grid grid-cols-4 py-1">
         {navItems.map(({ href, label, icon: Icon }) => {
-          const isActive =
-            href === "/" ? pathname === "/" : pathname.startsWith(href);
-
+          const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
           return (
-            <Link
-              key={href}
-              href={href}
-              className="flex flex-col items-center gap-1 py-2 relative"
-            >
+            <Link key={href} href={href} className="flex flex-col items-center gap-1 py-2 relative">
               <div className="relative">
                 {isActive && (
                   <motion.div
@@ -38,27 +32,15 @@ export function BottomNav() {
                     transition={{ type: "spring", duration: 0.4 }}
                   />
                 )}
-                <Icon
-                  className={cn(
-                    "h-5 w-5 relative z-10 transition-colors",
-                    isActive ? "text-primary" : "text-muted-foreground"
-                  )}
-                />
+                <Icon className={cn("h-5 w-5 relative z-10 transition-colors", isActive ? "text-primary" : "text-muted-foreground")} />
               </div>
-              <span
-                className={cn(
-                  "text-[10px] font-medium transition-colors",
-                  isActive ? "text-primary" : "text-muted-foreground"
-                )}
-              >
+              <span className={cn("text-[10px] font-medium transition-colors", isActive ? "text-primary" : "text-muted-foreground")}>
                 {label}
               </span>
             </Link>
           );
         })}
       </div>
-      {/* Safe area spacer for iPhone */}
-      <div className="h-safe-area-inset-bottom" />
     </nav>
   );
 }

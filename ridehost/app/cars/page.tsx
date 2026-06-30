@@ -124,7 +124,7 @@ function CarsContent() {
               placeholder="Search by brand, model..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 h-12 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/30"
+              className="w-full pl-11 pr-4 h-12 rounded-2xl bg-white/8 backdrop-blur-sm border border-white/15 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-amber-500/40"
             />
           </div>
         </div>
