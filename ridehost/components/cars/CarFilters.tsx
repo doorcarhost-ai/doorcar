@@ -206,7 +206,7 @@ export function CarFilters({
     <>
       {/* Desktop Sidebar */}
       <aside className="hidden lg:block w-64 shrink-0">
-        <div className="sticky top-20 bg-white border border-[#E5E7EB] rounded-3xl p-5 max-h-[calc(100vh-6rem)] overflow-y-auto shadow-premium">
+        <div className="sticky top-20 bg-white border border-[#E5E7EB] rounded-3xl p-5 max-h-[calc(100vh-5rem)] overflow-y-auto shadow-premium">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-bold text-lg flex items-center gap-2">
               <SlidersHorizontal className="h-4 w-4" />

@@ -28,7 +28,7 @@ export function Categories() {
             onClick={() => router.push(`/cars?category=${cat.id}`)}
             className={cn(
               "flex flex-col items-center gap-3 p-4 sm:p-5 rounded-2xl border border-[#E5E7EB] bg-white",
-              "hover:border-[#FF7A00]/40 hover:shadow-premium transition-all cursor-pointer group"
+              "hover:border-[#FF7A00] hover:shadow-premium hover:shadow-[#FF7A00]/10 transition-all cursor-pointer group"
             )}
           >
             <div className="text-3xl sm:text-4xl transition-transform group-hover:scale-110">{cat.icon}</div>

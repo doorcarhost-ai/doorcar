@@ -2,28 +2,19 @@
 
 import { useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import {
-  BadgeIndianRupee,
-  ChevronLeft,
-  CreditCard,
-  Lock,
-  Tag,
-  Wallet,
-} from "lucide-react";
 import Image from "next/image";
+import { ChevronLeft, Receipt, Tag } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
+import { UpiPayment } from "@/components/booking/UpiPayment";
 import { MOCK_CARS } from "@/data/mock-data";
+import { useBookingStore, useNotificationStore } from "@/lib/store";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { CONVENIENCE_FEE, PAYMENT_METHODS } from "@/lib/constants";
-import { cn } from "@/lib/utils";
+import { CONVENIENCE_FEE } from "@/lib/constants";
 
 const VALID_COUPONS: Record<string, number> = {
   FIRSTRIDE: 500,
@@ -34,293 +25,159 @@ const VALID_COUPONS: Record<string, number> = {
 function PaymentContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [paymentMethod, setPaymentMethod] = useState("upi");
   const [coupon, setCoupon] = useState("");
-  const [couponApplied, setCouponApplied] = useState<string | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const [couponError, setCouponError] = useState("");
-  const [processing, setProcessing] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const { bookings, submitRentalPayment } = useBookingStore();
+  const { addNotification } = useNotificationStore();
 
   const carId = searchParams.get("carId") || "1";
-  const pickupDate = searchParams.get("pickupDate") || "";
-  const returnDate = searchParams.get("returnDate") || "";
+  const bookingId = searchParams.get("bookingId") || "";
   const totalStr = searchParams.get("total") || "0";
 
   const car = MOCK_CARS.find((c) => c.id === carId) || MOCK_CARS[0];
-  const baseTotal = parseFloat(totalStr) || 7500;
+  const booking = bookingId ? bookings.find((b) => b.id === bookingId) : null;
+  const pickupDate = searchParams.get("pickupDate") || "";
+  const returnDate = searchParams.get("returnDate") || "";
+
+  const baseAmount = parseFloat(totalStr) || booking?.rentalAmount || 1020;
 
   const getCouponDiscount = () => {
-    if (!couponApplied) return 0;
-    const discount = VALID_COUPONS[couponApplied];
-    if (!discount) return 0;
-    if (discount > 1) return discount;
-    return Math.round(baseTotal * discount);
+    if (!appliedCoupon) return 0;
+    const d = VALID_COUPONS[appliedCoupon];
+    if (!d) return 0;
+    return d > 1 ? d : Math.round(baseAmount * d);
   };
 
   const discount = getCouponDiscount();
-  const finalTotal = baseTotal - discount + car.securityDeposit;
+  const finalAmount = Math.max(0, baseAmount - discount);
 
   const handleApplyCoupon = () => {
-    const upperCoupon = coupon.toUpperCase();
-    if (VALID_COUPONS[upperCoupon] !== undefined) {
-      setCouponApplied(upperCoupon);
+    const upper = coupon.toUpperCase().trim();
+    if (VALID_COUPONS[upper] !== undefined) {
+      setAppliedCoupon(upper);
       setCouponError("");
+      addNotification({ type: "success", title: "Coupon Applied!", message: `Saving ₹${getCouponDiscount()}` });
     } else {
       setCouponError("Invalid coupon code");
-      setCouponApplied(null);
+      setAppliedCoupon(null);
     }
   };
 
-  const handlePayment = async () => {
-    setProcessing(true);
-    await new Promise((r) => setTimeout(r, 2000));
-    router.push(
-      `/booking/success?ref=RH${Date.now().toString(36).toUpperCase()}&car=${car.name}`
-    );
-  };
-
-  const paymentIcons: Record<string, React.ReactNode> = {
-    upi: <BadgeIndianRupee className="h-5 w-5" />,
-    card: <CreditCard className="h-5 w-5" />,
-    netbanking: <Lock className="h-5 w-5" />,
-    wallet: <Wallet className="h-5 w-5" />,
+  const handlePayment = async (data: { utrNumber: string; screenshotUrl: string }) => {
+    setSubmitting(true);
+    await new Promise((r) => setTimeout(r, 1200));
+    if (bookingId) submitRentalPayment(bookingId, data.utrNumber, data.screenshotUrl);
+    setSubmitting(false);
+    addNotification({ type: "success", title: "Payment Submitted!", message: "Admin will verify within 15–30 minutes." });
+    const params = new URLSearchParams({ ref: bookingId || "", car: car.name, bookingId: bookingId || "" });
+    router.push(`/booking/success?${params.toString()}`);
   };
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-[#F8F9FB]">
       <Header />
-
       <div className="pt-20 pb-12 px-4 sm:px-6 max-w-4xl mx-auto">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors"
+          className="flex items-center gap-1.5 text-sm text-[#6B7280] hover:text-[#FF7A00] mb-6 transition-colors"
         >
-          <ChevronLeft className="h-4 w-4" />
-          Back
+          <ChevronLeft className="h-4 w-4" />Back
         </button>
 
-        <h1 className="text-2xl font-bold mb-6">Payment</h1>
+        <h1 className="text-2xl font-bold text-[#111827] mb-6">Complete Rental Payment</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* Payment section */}
-          <div className="lg:col-span-3 space-y-5">
-            {/* Payment methods */}
-            <div className="bg-card border border-border rounded-2xl p-5">
-              <h2 className="font-semibold mb-4">Choose Payment Method</h2>
-              <RadioGroup
-                value={paymentMethod}
-                onValueChange={setPaymentMethod}
-                className="space-y-3"
-              >
-                {PAYMENT_METHODS.map((method) => (
-                  <div
-                    key={method.id}
-                    className={cn(
-                      "flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all",
-                      paymentMethod === method.id
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:border-primary/50"
-                    )}
-                    onClick={() => setPaymentMethod(method.id)}
-                  >
-                    <RadioGroupItem value={method.id} id={method.id} />
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
-                      {paymentIcons[method.id]}
-                    </div>
-                    <Label
-                      htmlFor={method.id}
-                      className="cursor-pointer font-medium flex-1"
-                    >
-                      {method.label}
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
-            </div>
-
-            {/* UPI Details */}
-            {paymentMethod === "upi" && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-card border border-border rounded-2xl p-5"
-              >
-                <h3 className="font-semibold mb-4">UPI Details</h3>
-                <div>
-                  <Label className="mb-1.5">UPI ID</Label>
-                  <Input placeholder="yourname@upi" />
-                </div>
-              </motion.div>
-            )}
-
-            {/* Card Details */}
-            {paymentMethod === "card" && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-card border border-border rounded-2xl p-5 space-y-4"
-              >
-                <h3 className="font-semibold">Card Details</h3>
-                <div>
-                  <Label className="mb-1.5">Card Number</Label>
-                  <Input
-                    placeholder="1234 5678 9012 3456"
-                    maxLength={19}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label className="mb-1.5">Expiry</Label>
-                    <Input placeholder="MM/YY" maxLength={5} />
-                  </div>
-                  <div>
-                    <Label className="mb-1.5">CVV</Label>
-                    <Input type="password" placeholder="•••" maxLength={4} />
-                  </div>
-                </div>
-                <div>
-                  <Label className="mb-1.5">Name on Card</Label>
-                  <Input placeholder="As on card" />
-                </div>
-              </motion.div>
-            )}
-
-            {/* Secure badge */}
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
-              <Lock className="h-4 w-4 text-green-600 shrink-0" />
-              <p className="text-sm text-green-700 dark:text-green-400">
-                Your payment is secured by 256-bit SSL encryption
-              </p>
-            </div>
+          {/* Payment */}
+          <div className="lg:col-span-3">
+            <UpiPayment
+              amount={finalAmount}
+              purpose={`Rental — ${car.name}`}
+              onSubmit={handlePayment}
+              isLoading={submitting}
+            />
           </div>
 
-          {/* Order Summary */}
+          {/* Order summary */}
           <div className="lg:col-span-2">
-            <div className="bg-card border border-border rounded-2xl p-5 sticky top-24">
-              <h2 className="font-semibold mb-4">Order Summary</h2>
+            <div className="bg-white rounded-3xl border border-[#E5E7EB] shadow-premium p-5 sticky top-24 space-y-4">
+              <h3 className="font-bold text-[#111827] flex items-center gap-2">
+                <Receipt className="h-4 w-4 text-[#FF7A00]" />Order Summary
+              </h3>
 
               {/* Car */}
-              <div className="flex gap-3 mb-5">
-                <div className="relative h-16 w-24 rounded-xl overflow-hidden shrink-0">
-                  <Image
-                    src={car.images[0]}
-                    alt={car.name}
-                    fill
-                    className="object-cover"
-                    sizes="96px"
-                  />
+              <div className="flex gap-3 p-3 bg-[#F8F9FB] rounded-2xl border border-[#E5E7EB]">
+                <div className="relative h-14 w-20 rounded-xl overflow-hidden shrink-0">
+                  <Image src={car.images[0]} alt={car.name} fill className="object-cover" sizes="80px" />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-semibold text-sm truncate">{car.name}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {pickupDate && formatDate(new Date(pickupDate))} →{" "}
-                    {returnDate && formatDate(new Date(returnDate))}
-                  </p>
+                  <p className="font-bold text-sm text-[#111827] truncate">{car.name}</p>
+                  {pickupDate && returnDate && (
+                    <p className="text-xs text-[#6B7280] mt-0.5">
+                      {formatDate(new Date(pickupDate))} → {formatDate(new Date(returnDate))}
+                    </p>
+                  )}
                 </div>
               </div>
 
-              <Separator className="mb-4" />
-
               {/* Coupon */}
-              <div className="mb-4">
-                <Label className="mb-2 flex items-center gap-1.5">
-                  <Tag className="h-4 w-4" />
-                  Coupon Code
+              <div>
+                <Label className="text-sm font-semibold text-[#111827] mb-2 flex items-center gap-1.5">
+                  <Tag className="h-4 w-4 text-[#FF7A00]" />Coupon Code
                 </Label>
                 <div className="flex gap-2">
                   <Input
                     value={coupon}
                     onChange={(e) => setCoupon(e.target.value.toUpperCase())}
-                    placeholder="Enter code"
-                    className="uppercase"
-                    disabled={!!couponApplied}
+                    placeholder="FIRSTRIDE"
+                    className="uppercase font-mono h-10"
+                    disabled={!!appliedCoupon}
                   />
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={
-                      couponApplied
-                        ? () => {
-                            setCouponApplied(null);
-                            setCoupon("");
-                          }
-                        : handleApplyCoupon
-                    }
-                    className="shrink-0"
+                    className="shrink-0 h-10"
+                    onClick={appliedCoupon ? () => { setAppliedCoupon(null); setCoupon(""); } : handleApplyCoupon}
                   >
-                    {couponApplied ? "Remove" : "Apply"}
+                    {appliedCoupon ? "Remove" : "Apply"}
                   </Button>
                 </div>
-                {couponError && (
-                  <p className="text-xs text-destructive mt-1">{couponError}</p>
-                )}
-                {couponApplied && (
-                  <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                    ✓ Coupon &quot;{couponApplied}&quot; applied! Saving{" "}
-                    {formatCurrency(discount)}
+                {couponError && <p className="text-xs text-red-500 mt-1">{couponError}</p>}
+                {appliedCoupon && (
+                  <p className="text-xs text-green-600 mt-1 font-medium">
+                    ✓ &quot;{appliedCoupon}&quot; applied — saving {formatCurrency(discount)}!
                   </p>
                 )}
               </div>
 
-              <Separator className="mb-4" />
+              <Separator />
 
-              <div className="space-y-2.5 mb-4">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Rental charges</span>
-                  <span>
-                    {formatCurrency(baseTotal - CONVENIENCE_FEE * 1.18)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">
-                    Convenience fee
-                  </span>
-                  <span>{formatCurrency(CONVENIENCE_FEE)}</span>
+              {/* Breakdown */}
+              <div className="space-y-2.5 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-[#6B7280]">Rental charges</span>
+                  <span className="font-medium text-[#111827]">{formatCurrency(baseAmount)}</span>
                 </div>
                 {discount > 0 && (
-                  <div className="flex justify-between text-sm text-green-600">
-                    <span>Discount ({couponApplied})</span>
-                    <span>- {formatCurrency(discount)}</span>
+                  <div className="flex justify-between text-green-600">
+                    <span>Discount ({appliedCoupon})</span>
+                    <span className="font-semibold">− {formatCurrency(discount)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">
-                    Security deposit
-                  </span>
-                  <span>{formatCurrency(car.securityDeposit)}</span>
+                <Separator />
+                <div className="flex justify-between font-bold text-base">
+                  <span className="text-[#111827]">Total Payable</span>
+                  <span className="text-[#FF7A00]">{formatCurrency(finalAmount)}</span>
                 </div>
               </div>
 
-              <div className="flex justify-between font-bold text-lg mb-5 p-3 bg-primary/5 rounded-xl">
-                <span>Total Payable</span>
-                <span className="text-primary">{formatCurrency(finalTotal)}</span>
+              <div className="p-3 bg-[#F8F9FB] rounded-xl border border-[#E5E7EB]">
+                <p className="text-xs text-[#6B7280]">
+                  Security deposit & other charges are collected separately after admin approves this payment.
+                </p>
               </div>
-
-              <Badge
-                variant="secondary"
-                className="w-full justify-center mb-4"
-              >
-                Deposit is fully refundable after trip
-              </Badge>
-
-              <Button
-                variant="gradient"
-                size="lg"
-                className="w-full gap-2"
-                onClick={handlePayment}
-                disabled={processing}
-              >
-                {processing ? (
-                  <>
-                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <Lock className="h-4 w-4" />
-                    Pay {formatCurrency(finalTotal)}
-                  </>
-                )}
-              </Button>
             </div>
           </div>
         </div>
@@ -334,7 +191,7 @@ function PaymentContent() {
 
 export default function PaymentPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="h-8 w-8 border-2 border-[#FF7A00] border-t-transparent rounded-full animate-spin" /></div>}>
       <PaymentContent />
     </Suspense>
   );
