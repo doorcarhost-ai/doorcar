@@ -305,12 +305,18 @@ export default function TripsPage() {
               </div>
 
               {/* Actions */}
-              {detailBooking.status === "rental_payment_approved" && (
+              {(detailBooking.status === "rental_payment_approved" || detailBooking.status === "additional_charges_pending") && (
                 <Link href={`/booking/complete?carId=${detailBooking.carId}&bookingId=${detailBooking.id}`}>
                   <Button variant="gradient" className="w-full gap-2">
                     Complete Booking <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
+              )}
+              {(detailBooking.status === "rental_payment_submitted" || detailBooking.status === "additional_charges_submitted") && (
+                <div className="w-full h-11 flex items-center justify-center gap-2 rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 text-sm font-semibold">
+                  <div className="h-4 w-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+                  Waiting for Admin Approval
+                </div>
               )}
 
               <div className="grid grid-cols-2 gap-2">
@@ -357,7 +363,9 @@ interface TripCardProps {
 }
 
 function TripCard({ booking, index, onViewDetails, onCancel }: TripCardProps) {
-  const isApproved = booking.status === "rental_payment_approved";
+  const completePath = `/booking/complete?carId=${booking.carId}&bookingId=${booking.id}`;
+  const needsCompleteBooking = booking.status === "rental_payment_approved" || booking.status === "additional_charges_pending";
+  const waitingApproval = booking.status === "rental_payment_submitted" || booking.status === "additional_charges_submitted";
 
   return (
     <motion.div
@@ -367,7 +375,6 @@ function TripCard({ booking, index, onViewDetails, onCancel }: TripCardProps) {
       className="bg-white rounded-3xl border border-[#E5E7EB] overflow-hidden shadow-premium hover:shadow-premium-lg transition-shadow"
     >
       <div className="flex gap-4 p-4">
-        {/* Car image */}
         <div className="relative h-24 w-32 rounded-2xl overflow-hidden shrink-0 bg-gray-100">
           <Image src={booking.car.images[0]} alt={booking.car.name} fill className="object-cover" sizes="128px" />
         </div>
@@ -393,27 +400,47 @@ function TripCard({ booking, index, onViewDetails, onCancel }: TripCardProps) {
             <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{formatHours(booking.totalHours)}</span>
           </div>
 
-          <div className="flex items-center gap-1.5 mt-2">
+          <div className="flex items-center gap-1.5 mt-1.5">
             <p className="text-xs text-[#6B7280] font-mono">{booking.bookingReference}</p>
           </div>
         </div>
       </div>
 
-      {/* Actions */}
+      {/* Prominent Complete Booking CTA — spans full width */}
+      {needsCompleteBooking && (
+        <div className="px-4 pb-3">
+          <Link href={completePath} className="block">
+            <Button variant="gradient" className="w-full gap-2 h-11 text-sm font-bold shadow-orange">
+              Complete Booking <ArrowRight className="h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
+      )}
+
+      {/* Waiting for approval — full width disabled state */}
+      {waitingApproval && (
+        <div className="px-4 pb-3">
+          <div className="w-full h-11 flex items-center justify-center gap-2 rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 text-sm font-semibold">
+            <div className="h-4 w-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+            Waiting for Admin Approval
+          </div>
+        </div>
+      )}
+
+      {/* Standard actions row */}
       <div className="border-t border-[#F8F9FB] px-4 py-3 flex items-center justify-between bg-gray-50/50">
         <div>
-          <p className="text-xs text-[#6B7280]">Total</p>
-          <p className="font-bold text-[#111827]">{formatCurrency(booking.totalAmount)}</p>
+          <p className="text-xs text-[#6B7280]">Rental Paid</p>
+          <p className="font-bold text-[#111827]">{formatCurrency(booking.rentalAmount)}</p>
         </div>
         <div className="flex gap-2 flex-wrap justify-end">
-          {isApproved && (
-            <Link href={`/booking/complete?carId=${booking.carId}&bookingId=${booking.id}`}>
-              <Button variant="gradient" size="sm" className="h-8 gap-1 text-xs">
-                Complete <ArrowRight className="h-3.5 w-3.5" />
-              </Button>
-            </Link>
-          )}
-          {UPCOMING.includes(booking.status) && !isApproved && onCancel && (
+          {UPCOMING.includes(booking.status)
+            && !needsCompleteBooking
+            && !waitingApproval
+            && booking.status !== "booking_confirmed"
+            && booking.status !== "vehicle_ready"
+            && booking.status !== "additional_charges_approved"
+            && onCancel && (
             <Button variant="outline" size="sm" className="h-8 text-xs text-red-600 border-red-200 hover:bg-red-50" onClick={onCancel}>
               Cancel
             </Button>
