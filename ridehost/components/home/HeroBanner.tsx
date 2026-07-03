@@ -6,335 +6,342 @@ import { ArrowRight, Shield, Star, Zap } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
-/* ─── Particle system ──────────────────────────────────────── */
-const PARTICLES = Array.from({ length: 28 }, (_, i) => ({
+/* ─────────────────────────────────────────────
+   Floating dust particles
+───────────────────────────────────────────── */
+const DUST = Array.from({ length: 22 }, (_, i) => ({
   id: i,
-  x: Math.random() * 100,
-  y: Math.random() * 100,
-  size: 1 + Math.random() * 2.5,
-  delay: Math.random() * 5,
-  duration: 4 + Math.random() * 6,
-  opacity: 0.2 + Math.random() * 0.5,
+  x: 35 + Math.random() * 60,       // right side only
+  y: 10 + Math.random() * 80,
+  size: 1 + Math.random() * 2,
+  delay: Math.random() * 8,
+  dur: 6 + Math.random() * 8,
+  opacity: 0.08 + Math.random() * 0.22,
 }));
 
-/* ─── Cinematic road lane ──────────────────────────────────── */
-function CinematicRoad() {
+/* ─────────────────────────────────────────────
+   Number-plate SVG overlay
+───────────────────────────────────────────── */
+function NumberPlate() {
   return (
-    <div className="absolute bottom-0 left-0 right-0 h-56 pointer-events-none overflow-hidden">
-      {/* Asphalt base */}
-      <div className="absolute inset-0"
-        style={{ background: "linear-gradient(to top, #0f0f0f 0%, #1a1a1a 40%, transparent 100%)" }}
-      />
-      {/* Road surface with perspective */}
-      <svg className="absolute bottom-0 left-0 right-0 w-full" height="200" viewBox="0 0 1440 200" preserveAspectRatio="none">
-        <defs>
-          <linearGradient id="roadGrad" x1="0" y1="1" x2="0" y2="0">
-            <stop offset="0%" stopColor="#1c1c1c" />
-            <stop offset="100%" stopColor="#2a2a2a" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        <path d="M0,200 L0,100 L720,60 L1440,100 L1440,200 Z" fill="url(#roadGrad)" />
-        {/* Road edge lines */}
-        <line x1="0" y1="102" x2="1440" y2="102" stroke="#FF7A00" strokeWidth="1.5" strokeOpacity="0.3" />
-        <line x1="0" y1="195" x2="1440" y2="195" stroke="#FF7A00" strokeWidth="1" strokeOpacity="0.15" />
-      </svg>
-
-      {/* Moving dashes — centre line */}
-      <div className="absolute bottom-10 left-0 right-0 h-6 overflow-hidden">
-        <div className="flex items-center h-full animate-[roadMove_1.2s_linear_infinite]"
-          style={{ width: "200%" }}
-        >
-          {Array.from({ length: 32 }).map((_, i) => (
-            <div key={i} className="shrink-0 h-2 rounded-full mx-8"
-              style={{ width: 72, background: "rgba(255,255,255,0.55)" }}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Ground fog / glow */}
-      <div className="absolute bottom-0 left-0 right-0 h-20"
-        style={{ background: "radial-gradient(ellipse 80% 60% at 50% 100%, rgba(255,122,0,0.08) 0%, transparent 70%)" }}
-      />
-    </div>
-  );
-}
-
-/* ─── Wheel spinner ────────────────────────────────────────── */
-function Wheel({ style }: { style: React.CSSProperties }) {
-  return (
-    <div className="absolute rounded-full border-2 border-white/10 overflow-hidden"
-      style={{ animation: "wheel-spin 0.7s linear infinite", ...style }}
+    <svg
+      viewBox="0 0 160 38"
+      className="absolute"
+      style={{
+        width: "11%",
+        bottom: "24.5%",
+        left: "37%",
+        filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.7))",
+        zIndex: 6,
+      }}
     >
-      {/* Spokes */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        {[0, 60, 120].map((deg) => (
-          <div key={deg} className="absolute w-full h-px"
-            style={{ background: "rgba(255,255,255,0.25)", transform: `rotate(${deg}deg)` }}
-          />
-        ))}
-        <div className="h-3 w-3 rounded-full bg-white/20" />
-      </div>
+      <rect x="1" y="1" width="158" height="36" rx="5" fill="#F5F0D0" stroke="#B8A800" strokeWidth="1.5" />
+      <rect x="4" y="4" width="20" height="30" rx="3" fill="#003399" />
+      <text x="13" y="13" textAnchor="middle" fill="white" fontSize="7" fontWeight="bold" fontFamily="Arial">🇮🇳</text>
+      <text x="13" y="30" textAnchor="middle" fill="#FFD700" fontSize="6" fontWeight="bold" fontFamily="Arial">IND</text>
+      <text x="96" y="26" textAnchor="middle" fill="#111" fontSize="18" fontWeight="900"
+        fontFamily="'Arial Black', Arial, sans-serif" letterSpacing="3">
+        DOOR CAR
+      </text>
+    </svg>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   Sun glow burst
+───────────────────────────────────────────── */
+function SunGlow() {
+  return (
+    <div className="absolute pointer-events-none" style={{ top: "8%", right: "5%", zIndex: 3 }}>
+      {/* Core */}
+      <motion.div
+        animate={{ scale: [1, 1.12, 1], opacity: [0.9, 1, 0.9] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        className="rounded-full"
+        style={{ width: 70, height: 70, background: "radial-gradient(circle, #FFE566 0%, #FF8C00 40%, transparent 70%)", filter: "blur(2px)" }}
+      />
+      {/* Halo */}
+      <motion.div
+        animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+        className="absolute inset-0 rounded-full"
+        style={{ background: "radial-gradient(circle, rgba(255,200,60,0.4) 0%, transparent 70%)", transform: "scale(2.5)", filter: "blur(12px)" }}
+      />
     </div>
   );
 }
 
-/* ─── Light rays ───────────────────────────────────────────── */
+/* ─────────────────────────────────────────────
+   Cinematic light rays
+───────────────────────────────────────────── */
 function LightRays() {
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden">
-      {[30, 45, 60].map((angle, i) => (
-        <div key={i} className="absolute top-0 right-1/4"
+    <div className="absolute inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 3 }}>
+      {[
+        { rotate: -28, right: "8%", opacity: 0.13, w: 3, h: "55%", delay: 0 },
+        { rotate: -20, right: "12%", opacity: 0.09, w: 5, h: "60%", delay: 1.5 },
+        { rotate: -35, right: "3%", opacity: 0.07, w: 2, h: "45%", delay: 0.8 },
+      ].map((ray, i) => (
+        <motion.div
+          key={i}
+          animate={{ opacity: [ray.opacity * 0.5, ray.opacity, ray.opacity * 0.5] }}
+          transition={{ duration: 4 + i, repeat: Infinity, ease: "easeInOut", delay: ray.delay }}
+          className="absolute top-0"
           style={{
-            width: 2,
-            height: "60%",
-            background: "linear-gradient(to bottom, rgba(255,220,100,0.12), transparent)",
-            transform: `rotate(${angle}deg) translateX(${i * 60}px)`,
-            filter: "blur(8px)",
-            animation: `light-sweep ${4 + i}s ease-in-out infinite`,
-            animationDelay: `${i * 1.2}s`,
+            right: ray.right,
+            width: ray.w,
+            height: ray.h,
+            background: "linear-gradient(to bottom, rgba(255,200,80,0.8), transparent)",
+            transform: `rotate(${ray.rotate}deg)`,
+            transformOrigin: "top center",
+            filter: "blur(6px)",
           }}
         />
       ))}
+      {/* Wide warm wash from right */}
+      <div className="absolute top-0 right-0 h-full"
+        style={{ width: "55%", background: "linear-gradient(to left, rgba(255,130,0,0.07) 0%, transparent 60%)", pointerEvents: "none" }}
+      />
     </div>
   );
 }
 
-/* ─── Main Hero ────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────
+   Main Hero
+───────────────────────────────────────────── */
 export function HeroBanner() {
-  const sectionRef = useRef<HTMLElement>(null);
+  const ref = useRef<HTMLElement>(null);
   const { scrollY } = useScroll();
-  const bgY = useTransform(scrollY, [0, 500], [0, 60]);
-  const textY = useTransform(scrollY, [0, 500], [0, -30]);
+  const bgY = useTransform(scrollY, [0, 600], [0, 80]);
+  const carY = useTransform(scrollY, [0, 600], [0, 40]);
+  const textY = useTransform(scrollY, [0, 600], [0, -28]);
 
   return (
     <section
-      ref={sectionRef}
-      className="relative overflow-hidden bg-[#0a0a0a]"
-      style={{ minHeight: "88vh" }}
+      ref={ref}
+      className="relative overflow-hidden"
+      style={{ minHeight: "95vh", background: "#0d0b08" }}
     >
-      {/* ── Background: highway photograph ── */}
-      <motion.div className="absolute inset-0" style={{ y: bgY }}>
-        {/* Primary cinematic background — highway night/dusk */}
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=1800&q=85')`,
-            filter: "brightness(0.45) saturate(0.8)",
-          }}
-        />
-        {/* Colour grade overlay — teal-to-black cinema look */}
-        <div className="absolute inset-0"
-          style={{ background: "linear-gradient(135deg, rgba(0,20,40,0.6) 0%, rgba(0,0,0,0.3) 50%, rgba(20,5,0,0.5) 100%)" }}
+      {/* ══ BACKGROUND LAYERS ══════════════════════════ */}
+
+      {/* Layer 1 — Coastal highway panorama */}
+      <motion.div className="absolute inset-0" style={{ y: bgY, zIndex: 1 }}>
+        <img
+          src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=88&fm=webp"
+          alt=""
+          className="w-full h-full object-cover object-center"
+          style={{ filter: "brightness(0.52) saturate(1.1) sepia(0.18)" }}
+          loading="eager"
+          decoding="async"
         />
       </motion.div>
 
-      {/* ── Hero car — right half ── */}
-      <div className="absolute inset-y-0 right-0 w-full lg:w-3/5 pointer-events-none">
-        {/* Car image with subtle float */}
+      {/* Layer 2 — Golden-hour atmospheric colour grade */}
+      <div className="absolute inset-0" style={{ zIndex: 2,
+        background: "linear-gradient(160deg, rgba(10,6,2,0.55) 0%, rgba(30,12,0,0.35) 40%, rgba(180,80,0,0.12) 75%, transparent 100%)"
+      }} />
+
+      {/* ══ SUN & LIGHT ════════════════════════════════ */}
+      <SunGlow />
+      <LightRays />
+
+      {/* ══ CAR — RIGHT SIDE ═══════════════════════════ */}
+      <motion.div
+        className="absolute bottom-0 right-0"
+        style={{ y: carY, zIndex: 5, width: "58%", maxWidth: 900 }}
+      >
+        {/* Defender image — front-right 3/4 view */}
         <motion.div
-          className="absolute inset-0 flex items-end justify-center lg:justify-end pr-0 lg:pr-8 pb-14"
-          animate={{ y: [0, -10, 0] }}
-          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          initial={{ opacity: 0, x: 60 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
         >
-          <div className="relative w-full max-w-2xl h-64 sm:h-80 lg:h-[420px]">
-            <img
-              src="https://images.unsplash.com/photo-1617814076229-3a6e24e14f3e?w=1200&q=90"
-              alt="Black Land Rover Defender"
-              className="w-full h-full object-contain object-bottom drop-shadow-2xl"
-              style={{ filter: "drop-shadow(0 20px 40px rgba(0,0,0,0.8))" }}
-              onError={(e) => {
-                (e.target as HTMLImageElement).src =
-                  "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=1200&q=90";
-              }}
-            />
-
-            {/* Wheel spinner overlays (positioned approximately over wheel positions) */}
-            <Wheel style={{ bottom: "6%", left: "14%", width: "14%", aspectRatio: "1" }} />
-            <Wheel style={{ bottom: "6%", right: "16%", width: "14%", aspectRatio: "1" }} />
-
-            {/* Under-car glow */}
-            <div className="absolute -bottom-2 left-8 right-8 h-6 rounded-full blur-xl"
-              style={{ background: "radial-gradient(ellipse, rgba(255,122,0,0.25) 0%, transparent 70%)" }}
-            />
-          </div>
+          <img
+            src="https://images.unsplash.com/photo-1617814076229-3a6e24e14f3e?w=1400&q=90&fm=webp"
+            alt="Black Land Rover Defender — DOOR CAR"
+            className="w-full h-auto object-contain object-bottom"
+            style={{
+              filter: "drop-shadow(0 32px 64px rgba(0,0,0,0.85)) drop-shadow(0 0 40px rgba(255,120,0,0.18))",
+              maxHeight: "80vh",
+            }}
+            onError={(e) => {
+              (e.target as HTMLImageElement).src =
+                "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=1400&q=90&fm=webp";
+            }}
+            loading="eager"
+            decoding="async"
+          />
         </motion.div>
 
-        {/* Light rays coming from upper right */}
-        <LightRays />
-      </div>
+        {/* DOOR CAR number plate */}
+        <NumberPlate />
 
-      {/* ── Cinematic road ── */}
-      <CinematicRoad />
+        {/* Ground reflection / shadow */}
+        <div className="absolute bottom-0 left-4 right-4 h-14 pointer-events-none"
+          style={{ background: "radial-gradient(ellipse 80% 70% at 50% 100%, rgba(0,0,0,0.5) 0%, transparent 80%)", filter: "blur(8px)" }}
+        />
+        {/* Warm undercar glow */}
+        <div className="absolute bottom-2 left-1/4 right-1/4 h-8 pointer-events-none"
+          style={{ background: "radial-gradient(ellipse, rgba(255,100,0,0.2) 0%, transparent 70%)", filter: "blur(12px)" }}
+        />
+      </motion.div>
 
-      {/* ── Dark vignette ── */}
-      <div className="absolute inset-0 pointer-events-none"
-        style={{ background: "radial-gradient(ellipse 120% 100% at 50% 50%, transparent 40%, rgba(0,0,0,0.55) 100%)" }}
-      />
-
-      {/* ── Left text overlay ── */}
-      <div className="absolute inset-0 pointer-events-none"
-        style={{ background: "linear-gradient(to right, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 45%, transparent 70%)" }}
-      />
-
-      {/* ── Floating particles ── */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {PARTICLES.map((p) => (
+      {/* ══ FLOATING DUST PARTICLES ══════════════════ */}
+      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 4 }}>
+        {DUST.map((p) => (
           <motion.div
             key={p.id}
-            className="absolute rounded-full bg-white"
-            style={{
-              left: `${p.x}%`,
-              top: `${p.y}%`,
-              width: p.size,
-              height: p.size,
-              opacity: p.opacity,
-            }}
-            animate={{
-              y: [-12, 12, -12],
-              opacity: [p.opacity * 0.4, p.opacity, p.opacity * 0.4],
-            }}
-            transition={{
-              duration: p.duration,
-              repeat: Infinity,
-              delay: p.delay,
-              ease: "easeInOut",
-            }}
+            className="absolute rounded-full bg-amber-100"
+            style={{ left: `${p.x}%`, top: `${p.y}%`, width: p.size, height: p.size, opacity: p.opacity }}
+            animate={{ y: [-8, 8, -8], opacity: [p.opacity * 0.4, p.opacity, p.opacity * 0.4] }}
+            transition={{ duration: p.dur, repeat: Infinity, ease: "easeInOut", delay: p.delay }}
           />
         ))}
       </div>
 
-      {/* ── Content ── */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 h-full flex items-center"
-        style={{ minHeight: "88vh" }}
-      >
-        <motion.div
-          style={{ y: textY }}
-          className="w-full lg:w-1/2 xl:w-[46%] pt-20 pb-16"
-        >
-          {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-7"
-              style={{ background: "rgba(255,122,0,0.15)", border: "1px solid rgba(255,122,0,0.35)" }}
-            >
-              <span className="h-2 w-2 rounded-full bg-[#FF7A00] animate-pulse" />
-              <span className="text-[#FFB547] text-sm font-bold tracking-wide">India&apos;s #1 Self-Drive Platform</span>
-            </div>
-          </motion.div>
+      {/* ══ LEFT TEXT GRADIENT ════════════════════════ */}
+      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 6,
+        background: "linear-gradient(to right, rgba(5,3,1,0.80) 0%, rgba(5,3,1,0.68) 28%, rgba(5,3,1,0.35) 52%, transparent 72%)"
+      }} />
 
-          {/* Headline */}
-          <motion.h1
-            initial={{ opacity: 0, y: 28 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.1 }}
-            className="font-bold text-white leading-[1.1] mb-5"
-            style={{ fontSize: "clamp(2.4rem, 5vw, 3.6rem)" }}
+      {/* ══ CONTENT ═══════════════════════════════════ */}
+      <div className="relative flex items-center" style={{ zIndex: 10, minHeight: "95vh" }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full">
+          <motion.div
+            style={{ y: textY }}
+            className="w-full lg:w-1/2 xl:w-[46%] pt-24 pb-20"
           >
-            Drive Your
-            <br />
-            <span className="relative">
-              <span style={{ background: "linear-gradient(135deg, #FF7A00, #FFD166)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                Dream Car
+            {/* Badge */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7 }}
+              className="mb-7"
+            >
+              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold tracking-wide"
+                style={{ background: "rgba(255,122,0,0.18)", border: "1px solid rgba(255,160,0,0.4)", color: "#FFD166" }}>
+                <span className="h-2 w-2 rounded-full bg-[#FF7A00] animate-pulse" />
+                India&apos;s #1 Self-Drive Platform
               </span>
-              <motion.div
-                className="absolute -bottom-1 left-0 right-0 h-[3px] rounded-full"
-                style={{ background: "linear-gradient(to right, #FF7A00, #FFD166)" }}
-                initial={{ scaleX: 0, originX: 0 }}
-                animate={{ scaleX: 1 }}
-                transition={{ delay: 1, duration: 0.7 }}
-              />
-            </span>
-          </motion.h1>
+            </motion.div>
 
-          {/* Subline */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            className="text-white/70 mb-8 max-w-md leading-relaxed"
-            style={{ fontSize: "clamp(1rem, 2vw, 1.125rem)" }}
-          >
-            Book premium self-drive cars across India. No driver, no hidden charges — pure freedom on your terms.
-          </motion.p>
-
-          {/* CTAs */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.3 }}
-            className="flex flex-wrap gap-3 mb-9"
-          >
-            <Link href="/cars">
-              <Button
-                variant="gradient"
-                size="xl"
-                className="gap-2 shadow-[0_8px_30px_rgba(255,122,0,0.4)]"
-              >
-                Explore Cars <ArrowRight className="h-5 w-5" />
-              </Button>
-            </Link>
-            <button
-              className="h-14 px-8 rounded-2xl text-base font-bold text-white transition-all"
-              style={{
-                background: "rgba(255,255,255,0.1)",
-                border: "1px solid rgba(255,255,255,0.2)",
-                backdropFilter: "blur(12px)",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.18)")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.1)")}
+            {/* Heading */}
+            <motion.h1
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.85, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+              className="font-bold text-white leading-[1.08] mb-5"
+              style={{ fontSize: "clamp(2.6rem, 5.2vw, 4rem)", textShadow: "0 2px 24px rgba(0,0,0,0.5)" }}
             >
-              How It Works
-            </button>
-          </motion.div>
+              Drive Your
+              <br />
+              <span className="relative inline-block">
+                <span style={{
+                  background: "linear-gradient(125deg, #FF7A00 0%, #FFD166 55%, #FF9A3C 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                }}>
+                  Dream Car
+                </span>
+                <motion.div
+                  className="absolute -bottom-1 left-0 right-0 h-[3px] rounded-full"
+                  style={{ background: "linear-gradient(to right, #FF7A00, #FFD166)" }}
+                  initial={{ scaleX: 0, originX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ delay: 1.1, duration: 0.7, ease: "easeOut" }}
+                />
+              </span>
+            </motion.h1>
 
-          {/* Trust badges */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.4 }}
-            className="flex flex-wrap gap-5 mb-10"
-          >
-            {[
-              { icon: Shield, label: "Verified Cars" },
-              { icon: Zap, label: "Instant Booking" },
-              { icon: Star, label: "Top Rated" },
-            ].map(({ icon: Icon, label }) => (
-              <div key={label} className="flex items-center gap-2 text-sm text-white/70">
-                <Icon className="h-4 w-4 text-[#FF7A00]" />{label}
-              </div>
-            ))}
-          </motion.div>
+            {/* Subtitle */}
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+              className="text-white/75 mb-9 max-w-[420px] leading-relaxed"
+              style={{ fontSize: "clamp(1rem, 1.8vw, 1.15rem)" }}
+            >
+              Book premium self-drive cars across India. No driver, no hidden charges — pure freedom on your terms.
+            </motion.p>
 
-          {/* Stats row */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.5 }}
-            className="flex gap-6 flex-wrap"
-          >
-            {[
-              { value: "5,000+", label: "Cars" },
-              { value: "50+", label: "Cities" },
-              { value: "1.2M+", label: "Trips" },
-              { value: "4.9★", label: "Rating" },
-            ].map((s) => (
-              <div key={s.label} className="text-center">
-                <div className="text-xl sm:text-2xl font-bold text-white">{s.value}</div>
-                <div className="text-xs text-white/50 mt-0.5 font-medium uppercase tracking-wider">{s.label}</div>
-              </div>
-            ))}
+            {/* CTA Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.3 }}
+              className="flex flex-wrap gap-3 mb-9"
+            >
+              <Link href="/cars">
+                <Button variant="gradient" size="xl" className="gap-2"
+                  style={{ boxShadow: "0 8px 32px rgba(255,122,0,0.45), 0 0 0 1px rgba(255,122,0,0.2)" }}>
+                  Explore Cars <ArrowRight className="h-5 w-5" />
+                </Button>
+              </Link>
+              <motion.button
+                whileHover={{ background: "rgba(255,255,255,0.18)" }}
+                className="h-14 px-8 rounded-2xl text-base font-bold text-white transition-all"
+                style={{
+                  background: "rgba(255,255,255,0.10)",
+                  border: "1px solid rgba(255,255,255,0.22)",
+                  backdropFilter: "blur(16px)",
+                }}
+              >
+                How It Works
+              </motion.button>
+            </motion.div>
+
+            {/* Trust */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.4 }}
+              className="flex flex-wrap gap-5 mb-10"
+            >
+              {[
+                { icon: Shield, label: "Verified Cars" },
+                { icon: Zap, label: "Instant Booking" },
+                { icon: Star, label: "Top Rated" },
+              ].map(({ icon: Icon, label }) => (
+                <div key={label} className="flex items-center gap-2 text-sm text-white/65">
+                  <Icon className="h-4 w-4 text-[#FF9A3C]" />{label}
+                </div>
+              ))}
+            </motion.div>
+
+            {/* Stats */}
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.5 }}
+              className="flex gap-7 flex-wrap"
+            >
+              {[
+                { value: "5,000+", label: "Cars" },
+                { value: "50+", label: "Cities" },
+                { value: "1.2M+", label: "Trips" },
+                { value: "4.9★", label: "Rating" },
+              ].map((s) => (
+                <div key={s.label}>
+                  <div className="text-xl sm:text-2xl font-bold text-white"
+                    style={{ textShadow: "0 2px 12px rgba(0,0,0,0.4)" }}>{s.value}</div>
+                  <div className="text-xs text-white/45 mt-0.5 font-semibold uppercase tracking-widest">{s.label}</div>
+                </div>
+              ))}
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </div>
       </div>
 
-      {/* ── Bottom fade ── */}
-      <div className="absolute bottom-0 left-0 right-0 h-20 pointer-events-none"
-        style={{ background: "linear-gradient(to bottom, transparent, rgba(248,249,251,0.95))" }}
-      />
+      {/* ══ BOTTOM BLEND ══════════════════════════════ */}
+      <div className="absolute bottom-0 left-0 right-0 h-28 pointer-events-none" style={{ zIndex: 11,
+        background: "linear-gradient(to bottom, transparent 0%, #F8F9FB 100%)"
+      }} />
+
+      {/* ══ ROAD GROUND LINE ══════════════════════════ */}
+      <div className="absolute bottom-24 left-0 right-0 h-px pointer-events-none" style={{ zIndex: 5,
+        background: "linear-gradient(to right, transparent 0%, rgba(255,160,60,0.15) 30%, rgba(255,160,60,0.25) 50%, rgba(255,160,60,0.15) 70%, transparent 100%)"
+      }} />
     </section>
   );
 }
