@@ -124,3 +124,38 @@
 /* Line clamp */
 .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* ── Cinematic road animation ── */
+@keyframes road-move {
+  from { background-position: 0 0; }
+  to   { background-position: -200px 0; }
+}
+@keyframes wheel-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes car-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+@keyframes road-stripe {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes light-sweep {
+  0%   { opacity: 0.3; }
+  50%  { opacity: 0.7; }
+  100% { opacity: 0.3; }
+}
+.road-animate { animation: road-stripe 1.4s linear infinite; }
+.car-float    { animation: car-float 3.2s ease-in-out infinite; }
+.wheel-spin   { animation: wheel-spin 0.8s linear infinite; }
+.light-sweep  { animation: light-sweep 3s ease-in-out infinite; }
+
+/* ── Marquee ── */
+@keyframes marquee-left  { from { transform: translateX(0); }    to { transform: translateX(-50%); } }
+@keyframes marquee-right { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+.marquee-left  { animation: marquee-left  28s linear infinite; }
+.marquee-right { animation: marquee-right 32s linear infinite; }
+.marquee-left:hover,
+.marquee-right:hover { animation-play-state: paused; }

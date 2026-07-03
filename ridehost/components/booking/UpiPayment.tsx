@@ -1,15 +1,14 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import Image from "next/image";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  AlertCircle, Camera, CheckCircle, Clock, Copy,
-  ImageIcon, RefreshCw, Shield, UploadCloud, X,
+  AlertCircle, CheckCircle, Clock, Copy, RefreshCw, Shield, UploadCloud,
 } from "lucide-react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FileUploadField } from "@/components/shared/FileUploadField";
 import { UPI_CONFIG } from "@/lib/constants";
 import { formatCurrency } from "@/lib/utils";
 import { cn } from "@/lib/utils";
@@ -50,9 +49,6 @@ export function UpiPayment({ amount, purpose, onSubmit, isLoading }: UpiPaymentP
   const [utrError, setUtrError] = useState("");
   const [screenshot, setScreenshot] = useState<string | null>(null);
   const [copied, setCopied] = useState<"id" | "amount" | null>(null);
-  const [dragOver, setDragOver] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
-  const camRef = useRef<HTMLInputElement>(null);
 
   const upiString = `upi://pay?pa=${UPI_CONFIG.upiId}&pn=${encodeURIComponent(UPI_CONFIG.upiName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(purpose)}`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiString)}&color=111827&bgcolor=ffffff&qzone=2`;
@@ -63,21 +59,8 @@ export function UpiPayment({ amount, purpose, onSubmit, isLoading }: UpiPaymentP
     setTimeout(() => setCopied(null), 2000);
   };
 
-  const processFile = (file: File) => {
-    if (!file.type.startsWith("image/")) return;
-    const reader = new FileReader();
-    reader.onloadend = () => setScreenshot(reader.result as string);
-    reader.readAsDataURL(file);
-  };
 
-  const onDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) processFile(file);
-  }, []);
-
-  const canSubmit = utr.trim().length >= 10 && !!screenshot && !expired;
+  const canSubmit = utr.length === 12 && !!screenshot && !expired;
 
   const handleSubmit = () => {
     if (!utr.trim()) { setUtrError("Please enter the UTR number"); return; }
@@ -209,86 +192,54 @@ export function UpiPayment({ amount, purpose, onSubmit, isLoading }: UpiPaymentP
           <p className="text-sm text-[#6B7280]">Enter UTR and upload screenshot after paying</p>
         </div>
 
-        {/* UTR */}
+        {/* UTR — numbers only, 12 digits max */}
         <div>
           <Label className="text-sm font-semibold text-[#111827] mb-2">
             UTR / Transaction ID <span className="text-red-500">*</span>
           </Label>
-          <Input
-            value={utr}
-            onChange={(e) => { setUtr(e.target.value); setUtrError(""); }}
-            placeholder="12-digit UTR number e.g. 123456789012"
-            className={cn(
-              "font-mono h-12 text-base rounded-xl",
-              utr.length >= 10 ? "border-green-400 focus:border-green-500" : ""
-            )}
-          />
-          <div className="flex items-center justify-between mt-1.5">
-            <p className="text-xs text-[#6B7280]">Find in your UPI app under Transaction Details</p>
+          <div className="relative">
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={12}
+              value={utr}
+              onChange={(e) => {
+                const v = e.target.value.replace(/\D/g, "").slice(0, 12);
+                setUtr(v);
+                setUtrError("");
+              }}
+              placeholder="12-digit UTR  e.g. 123456789012"
+              className={cn(
+                "w-full h-12 px-4 font-mono text-base rounded-xl border transition-colors outline-none focus:ring-2 focus:ring-[#FF7A00]/20",
+                utr.length === 12
+                  ? "border-green-400 bg-green-50/50 focus:border-green-500"
+                  : utr.length > 0
+                  ? "border-[#FF7A00]/50 focus:border-[#FF7A00]"
+                  : "border-[#E5E7EB] focus:border-[#FF7A00] bg-[#F8F9FB]"
+              )}
+            />
             {utr.length > 0 && (
-              <span className={cn("text-xs font-semibold", utr.length >= 10 ? "text-green-600" : "text-[#FF7A00]")}>
-                {utr.length}/10+
-              </span>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                <span className={cn("text-xs font-bold tabular-nums", utr.length === 12 ? "text-green-600" : "text-[#FF7A00]")}>
+                  {utr.length}/12
+                </span>
+                {utr.length === 12 && <CheckCircle className="h-4 w-4 text-green-500" />}
+              </div>
             )}
           </div>
-        </div>
-
-        {/* Screenshot drag-drop */}
-        <div>
-          <Label className="text-sm font-semibold text-[#111827] mb-2">
-            Payment Screenshot <span className="text-red-500">*</span>
-          </Label>
-
-          {screenshot ? (
-            <div className="relative">
-              <div className="relative h-44 rounded-2xl overflow-hidden border-2 border-green-400 bg-gray-100">
-                <Image src={screenshot} alt="Payment proof" fill className="object-cover" sizes="500px" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                  <CheckCircle className="h-3 w-3" />Screenshot Added
-                </div>
-              </div>
-              <button
-                onClick={() => setScreenshot(null)}
-                className="absolute top-2 right-2 h-8 w-8 flex items-center justify-center rounded-full bg-white border border-[#E5E7EB] shadow-sm hover:bg-red-50 transition-colors"
-              >
-                <X className="h-4 w-4 text-[#6B7280]" />
-              </button>
-            </div>
-          ) : (
-            <div
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={onDrop}
-              className={cn(
-                "border-2 border-dashed rounded-2xl p-6 transition-all text-center",
-                dragOver ? "border-[#FF7A00] bg-[#FFF8F3]" : "border-[#E5E7EB] hover:border-[#FF7A00]/50 hover:bg-[#FFF8F3]/50"
-              )}
-            >
-              <div className="flex justify-center mb-3">
-                <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center transition-colors", dragOver ? "bg-[#FF7A00]/15" : "bg-[#F8F9FB] border border-[#E5E7EB]")}>
-                  <UploadCloud className={cn("h-7 w-7 transition-colors", dragOver ? "text-[#FF7A00]" : "text-[#6B7280]")} />
-                </div>
-              </div>
-              <p className="text-sm font-semibold text-[#111827] mb-1">
-                {dragOver ? "Drop your screenshot here" : "Upload Payment Screenshot"}
-              </p>
-              <p className="text-xs text-[#6B7280] mb-4">Drag & drop or choose from camera / gallery</p>
-
-              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { if (e.target.files?.[0]) processFile(e.target.files[0]); }} />
-              <input ref={camRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { if (e.target.files?.[0]) processFile(e.target.files[0]); }} />
-
-              <div className="flex gap-2 justify-center">
-                <Button type="button" variant="outline" size="sm" className="gap-1.5" onClick={() => fileRef.current?.click()}>
-                  <ImageIcon className="h-3.5 w-3.5" />Gallery
-                </Button>
-                <Button type="button" variant="outline" size="sm" className="gap-1.5" onClick={() => camRef.current?.click()}>
-                  <Camera className="h-3.5 w-3.5" />Camera
-                </Button>
-              </div>
-            </div>
+          {utr.length > 0 && utr.length < 12 && (
+            <p className="text-xs text-[#FF7A00] mt-1">{12 - utr.length} more digits required</p>
           )}
+          <p className="text-xs text-[#6B7280] mt-1">Numbers only · Find in UPI app under Transaction Details</p>
         </div>
+
+        {/* Screenshot — using unified upload component */}
+        <FileUploadField
+          label={<>Payment Screenshot <span className="text-red-500">*</span></> as unknown as string}
+          value={screenshot}
+          onChange={(url) => setScreenshot(url)}
+        />
 
         {utrError && (
           <div className="flex items-center gap-2 p-3 rounded-xl bg-red-50 border border-red-200">
@@ -318,20 +269,20 @@ export function UpiPayment({ amount, purpose, onSubmit, isLoading }: UpiPaymentP
           )}
           {!canSubmit && !isLoading && (
             <span className="absolute right-4 text-[10px] text-white/70 hidden sm:block">
-              {!utr || utr.length < 10 ? "Enter UTR" : "Upload screenshot"}
+              {utr.length < 12 ? `UTR: ${utr.length}/12` : "Upload screenshot"}
             </span>
           )}
         </Button>
 
         {/* Step indicators */}
         <div className="grid grid-cols-2 gap-2">
-          <div className={cn("flex items-center gap-2 p-2 rounded-xl text-xs font-medium", utr.length >= 10 ? "bg-green-50 text-green-700 border border-green-200" : "bg-[#F8F9FB] text-[#6B7280] border border-[#E5E7EB]")}>
-            {utr.length >= 10 ? <CheckCircle className="h-3.5 w-3.5" /> : <span className="h-3.5 w-3.5 rounded-full border border-current" />}
-            UTR Entered
+          <div className={cn("flex items-center gap-2 p-2 rounded-xl text-xs font-medium", utr.length === 12 ? "bg-green-50 text-green-700 border border-green-200" : "bg-[#F8F9FB] text-[#6B7280] border border-[#E5E7EB]")}>
+            {utr.length === 12 ? <CheckCircle className="h-3.5 w-3.5" /> : <span className="h-3.5 w-3.5 rounded-full border border-current" />}
+            12-digit UTR
           </div>
           <div className={cn("flex items-center gap-2 p-2 rounded-xl text-xs font-medium", screenshot ? "bg-green-50 text-green-700 border border-green-200" : "bg-[#F8F9FB] text-[#6B7280] border border-[#E5E7EB]")}>
             {screenshot ? <CheckCircle className="h-3.5 w-3.5" /> : <span className="h-3.5 w-3.5 rounded-full border border-current" />}
-            Screenshot Uploaded
+            Screenshot ✓
           </div>
         </div>
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, use } from "react";
+import { useState, use, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -33,6 +33,10 @@ export default function BookingPage({ params }: BookingPageProps) {
   const [stepIdx, setStepIdx] = useState(0);
   const [bookingId, setBookingId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [coupon, setCoupon] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
+  const [couponError, setCouponError] = useState("");
+  const couponRef = useRef<HTMLInputElement>(null);
 
   const { createBooking, submitRentalPayment } = useBookingStore();
   const { addNotification } = useNotificationStore();
@@ -60,6 +64,24 @@ export default function BookingPage({ params }: BookingPageProps) {
   const extraH = Math.max(0, Math.max(hours, adminConfig.minimumHours) - adminConfig.minimumHours);
   const extraCharges = extraH * adminConfig.extraHourCharge;
   const totalRental = rentalAmount + extraCharges;
+
+  // Coupon logic (after totalRental is defined)
+  const VALID_COUPONS: Record<string, { discount: number; freeDelivery?: boolean; label: string }> = {
+    FIRSTRIDE: { discount: 500, freeDelivery: true, label: "₹500 OFF + Free Home Delivery" },
+    WEEKEND20: { discount: 0.2, label: "20% OFF Rental" },
+    GOGREEN15: { discount: 0.15, label: "15% OFF Electric Vehicles" },
+  };
+  const applyCoupon = () => {
+    const key = coupon.toUpperCase().trim();
+    if (VALID_COUPONS[key]) { setAppliedCoupon(key); setCouponError(""); }
+    else { setCouponError("Invalid coupon. Try FIRSTRIDE, WEEKEND20, or GOGREEN15."); setAppliedCoupon(null); }
+  };
+  const couponData = appliedCoupon ? VALID_COUPONS[appliedCoupon] : null;
+  const couponDiscount = couponData
+    ? couponData.discount > 1 ? couponData.discount : Math.round(totalRental * couponData.discount)
+    : 0;
+  const homeDeliveryFreeByFirstRide = couponData?.freeDelivery === true;
+  const finalRental = Math.max(0, totalRental - couponDiscount);
 
   const handlePaymentSubmit = async (data: { utrNumber: string; screenshotUrl: string }) => {
     setSubmitting(true);
@@ -169,9 +191,79 @@ export default function BookingPage({ params }: BookingPageProps) {
                         ))}
                       </div>
 
+                      {/* Coupon */}
+                      <div>
+                        <p className="text-sm font-bold text-[#111827] mb-2 flex items-center gap-1.5">
+                          <span>🎟</span> Have a Coupon?
+                        </p>
+                        <div className="flex gap-2">
+                          <input
+                            ref={couponRef}
+                            type="text"
+                            value={coupon}
+                            onChange={(e) => { setCoupon(e.target.value.toUpperCase()); setCouponError(""); }}
+                            placeholder="Enter code  e.g. FIRSTRIDE"
+                            className="flex-1 h-10 px-3 rounded-xl border border-[#E5E7EB] text-sm font-mono uppercase bg-[#F8F9FB] focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] disabled:opacity-60"
+                            disabled={!!appliedCoupon}
+                            onKeyDown={(e) => e.key === "Enter" && applyCoupon()}
+                          />
+                          <button
+                            type="button"
+                            onClick={appliedCoupon ? () => { setAppliedCoupon(null); setCoupon(""); } : applyCoupon}
+                            className="h-10 px-4 rounded-xl border font-semibold text-sm transition-colors shrink-0 bg-white border-[#E5E7EB] text-[#111827] hover:border-[#FF7A00] hover:text-[#FF7A00]"
+                          >
+                            {appliedCoupon ? "Remove" : "Apply"}
+                          </button>
+                        </div>
+                        {couponError && <p className="text-xs text-red-500 mt-1">{couponError}</p>}
+                        {appliedCoupon && couponData && (
+                          <div className="flex items-center gap-2 mt-2 p-2.5 bg-green-50 border border-green-200 rounded-xl">
+                            <span className="text-green-600 text-sm">✓</span>
+                            <span className="text-sm font-semibold text-green-700">{couponData.label}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Billing breakdown */}
+                      <div className="bg-[#F8F9FB] rounded-2xl border border-[#E5E7EB] p-4 space-y-2.5">
+                        <p className="text-xs font-bold text-[#6B7280] uppercase tracking-wider mb-3">Billing Summary</p>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-[#6B7280]">Rental Charges ({formatHours(Math.max(hours, adminConfig.minimumHours))})</span>
+                          <span className="font-medium text-[#111827]">{formatCurrency(totalRental)}</span>
+                        </div>
+                        {extraCharges > 0 && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-[#6B7280]">Extra Hours</span>
+                            <span className="font-medium text-[#111827]">{formatCurrency(extraCharges)}</span>
+                          </div>
+                        )}
+                        {couponDiscount > 0 && (
+                          <div className="flex justify-between text-sm text-green-600">
+                            <span>Coupon Discount</span>
+                            <span className="font-semibold">− {formatCurrency(couponDiscount)}</span>
+                          </div>
+                        )}
+                        {/* Home Delivery row — only shown if first-ride coupon is used */}
+                        {homeDeliveryFreeByFirstRide && (
+                          <div className="flex justify-between text-sm items-center">
+                            <span className="text-[#6B7280]">Home Delivery</span>
+                            <div className="flex items-center gap-2">
+                              <span className="line-through text-[#9CA3AF]">{formatCurrency(399)}</span>
+                              <span className="font-bold text-green-600">FREE</span>
+                              <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">First Booking</span>
+                            </div>
+                          </div>
+                        )}
+                        <Separator />
+                        <div className="flex justify-between font-bold text-base">
+                          <span className="text-[#111827]">Total Payable</span>
+                          <span className="text-[#FF7A00]">{formatCurrency(finalRental)}</span>
+                        </div>
+                      </div>
+
                       <Button variant="gradient" size="xl" className="w-full gap-2" onClick={() => setStepIdx(1)}>
                         <CreditCard className="h-5 w-5" />
-                        Proceed to Pay {formatCurrency(totalRental)}
+                        Pay {formatCurrency(finalRental)}
                       </Button>
                     </div>
                   </div>
@@ -182,7 +274,7 @@ export default function BookingPage({ params }: BookingPageProps) {
               {stepIdx === 1 && (
                 <motion.div key="payment" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                   <UpiPayment
-                    amount={totalRental}
+                    amount={finalRental}
                     purpose={`Rental — ${car.name}`}
                     onSubmit={handlePaymentSubmit}
                     isLoading={submitting}

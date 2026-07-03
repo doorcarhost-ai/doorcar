@@ -125,7 +125,7 @@ export function SearchBar() {
                 type="date"
                 min={today}
                 value={pickupDate}
-                onChange={(e) => setPickupDate(e.target.value)}
+                onChange={(e) => { setPickupDate(e.target.value); pickupDateRef.current?.blur(); }}
                 className="bg-transparent text-sm font-semibold text-[#111827] w-full outline-none cursor-pointer"
               />
             </div>
@@ -145,7 +145,7 @@ export function SearchBar() {
                 ref={pickupTimeRef}
                 type="time"
                 value={pickupTime}
-                onChange={(e) => setPickupTime(e.target.value)}
+                onChange={(e) => { setPickupTime(e.target.value); pickupTimeRef.current?.blur(); }}
                 className="bg-transparent text-sm font-semibold text-[#111827] w-full outline-none cursor-pointer"
               />
             </div>
@@ -166,7 +166,7 @@ export function SearchBar() {
                 type="date"
                 min={pickupDate || today}
                 value={returnDate}
-                onChange={(e) => setReturnDate(e.target.value)}
+                onChange={(e) => { setReturnDate(e.target.value); returnDateRef.current?.blur(); }}
                 className="bg-transparent text-sm font-semibold text-[#111827] w-full outline-none cursor-pointer"
               />
             </div>

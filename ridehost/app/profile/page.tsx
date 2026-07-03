@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useRef, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   BadgeCheck, Bell, Camera, ChevronRight, CreditCard, Edit, FileCheck,
   HeartHandshake, HelpCircle, LogOut, MapPin, Moon, Plus, RefreshCw,
-  Settings, Shield, Star, Sun, Upload, User, XCircle,
+  Settings, Shield, Star, Sun, User, XCircle,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
@@ -25,6 +25,7 @@ import { MOCK_USER } from "@/data/mock-data";
 import { APP_NAME } from "@/lib/constants";
 import { VerificationStatus } from "@/types";
 import { useVerificationStore, useNotificationStore } from "@/lib/store";
+import { FileUploadField } from "@/components/shared/FileUploadField";
 import { cn } from "@/lib/utils";
 
 function StatusBadge({ status }: { status: VerificationStatus }) {
@@ -53,12 +54,11 @@ interface DocUploadCardProps {
 }
 
 function DocUploadCard({ title, description, icon: Icon, fileUrl, status, onUpload, rejectionReason }: DocUploadCardProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
   return (
     <div className="bg-white rounded-2xl border border-[#E5E7EB] p-5 shadow-premium">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-[#FFF8F3] flex items-center justify-center">
+          <div className="h-10 w-10 rounded-xl bg-[#FFF8F3] flex items-center justify-center shrink-0">
             <Icon className="h-5 w-5 text-[#FF7A00]" />
           </div>
           <div>
@@ -69,25 +69,17 @@ function DocUploadCard({ title, description, icon: Icon, fileUrl, status, onUplo
         <StatusBadge status={status} />
       </div>
 
-      {fileUrl && (
-        <div className="relative h-36 rounded-xl overflow-hidden mb-3 bg-gray-100 border border-[#E5E7EB]">
-          <Image src={fileUrl} alt={title} fill className="object-cover" sizes="400px" />
-        </div>
-      )}
-
       {status === "rejected" && rejectionReason && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-3">
           <p className="text-xs text-red-700 font-medium">Rejected: {rejectionReason}</p>
-          <p className="text-xs text-red-600 mt-0.5">Please upload a clearer document.</p>
+          <p className="text-xs text-red-600 mt-0.5">Please upload a clearer document and resubmit.</p>
         </div>
       )}
-
       {status === "pending" && (
         <div className="bg-[#FFF8F3] border border-[#FF7A00]/20 rounded-xl p-3 mb-3">
-          <p className="text-xs text-[#FF7A00] font-medium">Under admin review. Usually takes 2-4 hours.</p>
+          <p className="text-xs text-[#FF7A00] font-medium">Under admin review. Usually 2–4 hours.</p>
         </div>
       )}
-
       {status === "verified" && (
         <div className="bg-green-50 border border-green-200 rounded-xl p-3 mb-3">
           <p className="text-xs text-green-700 font-medium flex items-center gap-1"><BadgeCheck className="h-3.5 w-3.5" />Approved by admin</p>
@@ -95,13 +87,15 @@ function DocUploadCard({ title, description, icon: Icon, fileUrl, status, onUplo
       )}
 
       {status !== "verified" && (
-        <>
-          <input ref={inputRef} type="file" accept="image/*,.pdf" className="hidden" onChange={(e) => { if (e.target.files?.[0]) onUpload(e.target.files[0]); }} />
-          <Button variant="outline" size="sm" className="w-full gap-2" onClick={() => inputRef.current?.click()}>
-            <Upload className="h-4 w-4" />
-            {fileUrl ? "Re-upload Document" : "Upload Document"}
-          </Button>
-        </>
+        <FileUploadField
+          value={fileUrl}
+          onChange={(url) => {
+            if (url) {
+              // Convert data URL to a fake File for the handler
+              onUpload(new File([url], "doc.jpg", { type: "image/jpeg" }));
+            }
+          }}
+        />
       )}
     </div>
   );
