@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
  * Drop your image into /public/images/ and change the path below.
  * Recommended: /images/hero-defender.jpg  (1920×1080, WebP/JPEG)
  */
-const HERO_IMAGE = "/images/hero-bg.png";
+const HERO_IMAGE = "/images/hero-defender.png";
 
 /* ─── Static dust motes (right side only) ────────────────────── */
 const MOTES = [
@@ -55,8 +55,8 @@ export function HeroBanner() {
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover"
           style={{
-            objectPosition: "60% center",
-            filter: "brightness(0.78) contrast(1.06) saturate(0.92)",
+            objectPosition: "65% center",
+            filter: "brightness(0.75) contrast(1.08) saturate(0.90)",
           }}
           loading="eager"
           decoding="async"
