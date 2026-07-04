@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: [
     "*.trycloudflare.com",
     "trycloudflare.com",
-    "alcohol-elderly-hull-activists.trycloudflare.com",
+    "std-wanting-rand-indication.trycloudflare.com",
   ],
 };
 
